@@ -3,7 +3,28 @@
     <p><strong>That didn't work:</strong> <%= @error %></p>
   </div>
 <% elsif @result %>
-  <div class="-rotate-1 border-4 border-[#0a0a0a] bg-[#ffd400] p-6 text-center shadow-[12px_12px_0_#1a56db] sm:p-10" role="status" aria-live="polite">
+  <% analytics_params = {
+    amount: @result.amount,
+    from_year: @result.from_year,
+    to_year: @result.to_year,
+    year_span: (@result.to_year - @result.from_year).abs,
+    direction: if @result.to_year > @result.from_year
+      "forward"
+    elsif @result.to_year < @result.from_year
+      "backward"
+    else
+      "same_year"
+    end
+  } %>
+
+  <div
+    class="-rotate-1 border-4 border-[#0a0a0a] bg-[#ffd400] p-6 text-center shadow-[12px_12px_0_#1a56db] sm:p-10"
+    role="status"
+    aria-live="polite"
+    data-controller="analytics"
+    data-analytics-event-name-value="calculation_completed"
+    data-analytics-params-value="<%= analytics_params.to_json %>"
+  >
     <p class="font-display text-2xl font-black text-[#0a0a0a]">
       <span class="text-[#cc0000]"><%= @result.amount_formatted %></span>
       <span class="italic">in <strong><%= @result.from_year %></strong> is like spending</span>
@@ -22,4 +43,5 @@
       <a class="text-[#1a56db] underline decoration-2 underline-offset-4 hover:text-[#cc0000]" href="<%= calculation_path(amount: @result.amount, from_year: @result.from_year, to_year: @result.to_year) %>" data-turbo-frame="_top">Permalink to this calculation</a>
     </p>
   </div>
+  <%= render "sponsor_slot" %>
 <% end %>

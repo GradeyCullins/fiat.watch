@@ -13,7 +13,12 @@ class SitemapController < ApplicationController
   private
 
   def build_entries
-    entries = [ { loc: root_url, priority: 1.0 } ]
+    entries = [
+      { loc: root_url, priority: 1.0 },
+      { loc: salary_inflation_calculator_url, priority: 0.8 },
+      { loc: rent_inflation_calculator_url, priority: 0.8 },
+      { loc: grocery_inflation_calculator_url, priority: 0.8 }
+    ]
     HIGHLIGHT_FROM_YEARS.each do |from_year|
       HIGHLIGHT_AMOUNTS.each do |amount|
         entries << {

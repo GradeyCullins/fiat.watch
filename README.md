@@ -1,24 +1,26 @@
-# README
+# Cooked Fiat
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Cooked Fiat is a Rails inflation calculator powered by U.S. BLS CPI-U data.
 
-Things you may want to cover:
+## Analytics
 
-* Ruby version
+Google Analytics 4 is loaded with `G-YPBX9G87YD`. Successful calculator results
+emit a `calculation_completed` event with these parameters:
 
-* System dependencies
+- `amount`
+- `from_year`
+- `to_year`
+- `year_span`
+- `direction`
 
-* Configuration
+Register those as GA4 custom definitions if you want to use them in standard
+reports. Sponsor placements also emit `sponsor_slot_view` and
+`sponsor_contact_click` with a `placement` parameter.
 
-* Database creation
+## Development
 
-* Database initialization
+Run the test suite with:
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+```bash
+bin/rails test
+```
