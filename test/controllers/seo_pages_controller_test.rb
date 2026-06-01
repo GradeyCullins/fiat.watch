@@ -5,10 +5,10 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     get salary_inflation_calculator_path
 
     assert_response :success
-    assert_select "title", "Salary Inflation Calculator | Cooked Fiat"
+    assert_select "title", "Salary Inflation Calculator With CPI Data | Cooked Fiat"
     assert_select "meta[name=?][content*=?]", "description", "Compare a salary"
     assert_select "link[rel=?][href$=?]", "canonical", salary_inflation_calculator_path
-    assert_select "meta[property=?][content=?]", "og:title", "Salary Inflation Calculator | Cooked Fiat"
+    assert_select "meta[property=?][content=?]", "og:title", "Salary Inflation Calculator With CPI Data | Cooked Fiat"
     assert_select "meta[property=?][content*=?]", "og:description", "Compare a salary"
     assert_select "meta[property=?][content$=?]", "og:image", "/opengraph-card.png"
     assert_select "meta[property=?][content=?]", "og:image:width", "1200"
@@ -21,7 +21,7 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     get rent_inflation_calculator_path
 
     assert_response :success
-    assert_select "title", "Rent Inflation Calculator | Cooked Fiat"
+    assert_select "title", "Rent Inflation Calculator With CPI Data | Cooked Fiat"
     assert_select "h1", "Rent inflation calculator"
   end
 
@@ -29,7 +29,7 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     get grocery_inflation_calculator_path
 
     assert_response :success
-    assert_select "title", "Grocery Inflation Calculator | Cooked Fiat"
+    assert_select "title", "Grocery Inflation Calculator With CPI Data | Cooked Fiat"
     assert_select "h1", "Grocery inflation calculator"
   end
 end
