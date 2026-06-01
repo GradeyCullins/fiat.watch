@@ -8,6 +8,11 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "title", "Salary Inflation Calculator | Cooked Fiat"
     assert_select "meta[name=?][content*=?]", "description", "Compare a salary"
     assert_select "link[rel=?][href$=?]", "canonical", salary_inflation_calculator_path
+    assert_select "meta[property=?][content=?]", "og:title", "Salary Inflation Calculator | Cooked Fiat"
+    assert_select "meta[property=?][content*=?]", "og:description", "Compare a salary"
+    assert_select "meta[property=?][content$=?]", "og:image", "/opengraph-card.png"
+    assert_select "meta[property=?][content=?]", "og:image:width", "1200"
+    assert_select "meta[name=?][content$=?]", "twitter:image", "/opengraph-card.png"
     assert_select "h1", "Salary inflation calculator"
     assert_select "a[href=?]", "/#calc-heading"
   end

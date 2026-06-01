@@ -2,27 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title><%= content_for?(:title) ? content_for(:title) : (@page_title || "Cooked Fiat — Inflation Calculator") %></title>
+    <title><%= content_for?(:title) ? content_for(:title) : page_title %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="description" content="<%= @meta_description || 'Calculate what any US dollar amount was really worth in any year using official Bureau of Labor Statistics CPI data.' %>">
+    <meta name="description" content="<%= meta_description %>">
     <meta name="theme-color" content="#CC0000">
     <meta name="application-name" content="Cooked Fiat">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
 
-    <link rel="canonical" href="<%= request.base_url + (@canonical_path || request.path) %>">
+    <link rel="canonical" href="<%= canonical_url %>">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="alternate" type="application/xml" title="Sitemap" href="<%= sitemap_url %>">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Cooked Fiat">
-    <meta property="og:title" content="<%= @page_title || 'Cooked Fiat — Inflation Calculator' %>">
-    <meta property="og:description" content="<%= @meta_description %>">
-    <meta property="og:url" content="<%= request.base_url + (@canonical_path || request.path) %>">
+    <meta property="og:title" content="<%= page_title %>">
+    <meta property="og:description" content="<%= meta_description %>">
+    <meta property="og:url" content="<%= canonical_url %>">
+    <meta property="og:image" content="<%= og_image_url %>">
+    <meta property="og:image:secure_url" content="<%= og_image_url %>">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="<%= og_image_alt %>">
+    <meta property="og:locale" content="en_US">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="<%= @page_title %>">
-    <meta name="twitter:description" content="<%= @meta_description %>">
+    <meta name="twitter:title" content="<%= page_title %>">
+    <meta name="twitter:description" content="<%= meta_description %>">
+    <meta name="twitter:image" content="<%= og_image_url %>">
+    <meta name="twitter:image:alt" content="<%= og_image_alt %>">
 
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
