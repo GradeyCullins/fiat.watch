@@ -1,0 +1,87 @@
+{
+  "source": "U.S. Bureau of Labor Statistics Average Price Data",
+  "source_url": "https://www.bls.gov/cpi/factsheets/average-prices.htm",
+  "mirror": "DB.nomics BLS mirror",
+  "last_updated": "2026-06-02",
+  "items": {
+    "gas": {
+      "name": "gas",
+      "item_name": "gasoline",
+      "question_name": "gas",
+      "unit": "per gallon",
+      "series_id": "APU000074714",
+      "series_name": "Gasoline, unleaded regular, per gallon/3.785 liters",
+      "years": {
+        "1980": 1.245,
+        "1990": 1.164,
+        "2000": 1.510,
+        "2010": 2.788,
+        "2020": 2.174,
+        "2025": 3.211
+      }
+    },
+    "eggs": {
+      "name": "eggs",
+      "item_name": "eggs",
+      "question_name": "eggs",
+      "unit": "per dozen",
+      "series_id": "APU0000708111",
+      "series_name": "Eggs, grade A, large, per doz.",
+      "years": {
+        "1980": 0.844,
+        "1990": 1.014,
+        "2000": 0.914,
+        "2010": 1.660,
+        "2020": 1.506,
+        "2025": 4.953
+      }
+    },
+    "bread": {
+      "name": "bread",
+      "item_name": "white bread",
+      "question_name": "bread",
+      "unit": "per pound",
+      "series_id": "APU0000702111",
+      "series_name": "Bread, white, pan, per lb. (453.6 gm)",
+      "years": {
+        "1980": 0.509,
+        "1990": 0.695,
+        "2000": 0.930,
+        "2010": 1.373,
+        "2020": 1.452,
+        "2025": 1.925
+      }
+    },
+    "milk": {
+      "name": "milk",
+      "item_name": "whole milk",
+      "question_name": "milk",
+      "unit": "per gallon",
+      "series_id": "APU0000709112",
+      "series_name": "Milk, fresh, whole, fortified, per gal. (3.8 lit)",
+      "years": {
+        "1995": 2.484,
+        "2000": 2.781,
+        "2010": 3.259,
+        "2020": 3.318,
+        "2025": 4.025
+      }
+    },
+    "ground-beef": {
+      "name": "ground beef",
+      "item_name": "ground beef",
+      "question_name": "ground beef",
+      "unit": "per pound",
+      "series_id": "APU0000703112",
+      "series_name": "Ground beef, 100% beef, per lb. (453.6 gm)",
+      "years": {
+        "1985": 1.238,
+        "1990": 1.587,
+        "2000": 1.569,
+        "2010": 2.366,
+        "2020": 4.115,
+        "2025": 5.545
+      }
+    }
+  }
+}

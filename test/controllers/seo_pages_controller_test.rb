@@ -32,4 +32,25 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "title", "Grocery Inflation Calculator With CPI Data | Cooked Fiat"
     assert_select "h1", "Grocery inflation calculator"
   end
+
+  test "new calculator intent pages render compact content" do
+    get gas_inflation_calculator_path
+
+    assert_response :success
+    assert_select "title", "Gas Inflation Calculator With CPI Data | Cooked Fiat"
+    assert_select "h1", "Gas inflation calculator"
+    assert_select "a[href=?]", "/#calc-heading"
+
+    get car_price_inflation_calculator_path
+    assert_response :success
+    assert_select "h1", "Car price inflation calculator"
+
+    get college_tuition_inflation_calculator_path
+    assert_response :success
+    assert_select "h1", "College tuition inflation calculator"
+
+    get minimum_wage_inflation_calculator_path
+    assert_response :success
+    assert_select "h1", "Minimum wage inflation calculator"
+  end
 end
