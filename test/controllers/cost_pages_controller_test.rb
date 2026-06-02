@@ -5,7 +5,7 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     get cost_page_path("gas", 1980)
 
     assert_response :success
-    assert_select "title", "How Much Did Gas Cost in 1980? | Cooked Fiat"
+    assert_select "title", "How Much Did Gas Cost in 1980? | Fiat Watch"
     assert_select "meta[name=?][content*=?]", "description", "Gas cost $1.25 per gallon in 1980"
     assert_select "link[rel=?][href$=?]", "canonical", cost_page_path("gas", 1980)
     assert_select "h1", "How much did gas cost in 1980?"
@@ -18,7 +18,7 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     get cost_page_path("ground-beef", 2020)
 
     assert_response :success
-    assert_select "title", "How Much Did Ground Beef Cost in 2020? | Cooked Fiat"
+    assert_select "title", "How Much Did Ground Beef Cost in 2020? | Fiat Watch"
     assert_select "h1", "How much did ground beef cost in 2020?"
     assert_select "p", /Ground beef averaged \$4\.12 per pound in 2020/
     assert_select "p", /APU0000703112/

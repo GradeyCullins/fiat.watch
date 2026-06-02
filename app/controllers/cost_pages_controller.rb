@@ -9,7 +9,7 @@ class CostPagesController < ApplicationController
     @year = params[:year].to_i
     @latest_year = CpiCalculator.latest_year
     @inflation_result = CpiCalculator.convert(amount: @year_price, from_year: @year, to_year: @latest_year)
-    @page_title = "How Much Did #{@item.question_name.titleize} Cost in #{@year}? | Cooked Fiat"
+    @page_title = "How Much Did #{@item.question_name.titleize} Cost in #{@year}? | Fiat Watch"
     @meta_description = "#{@item.question_name.capitalize} cost #{format_usd(@year_price)} #{@item.unit} in #{@year}, based on BLS average price data. See the inflation-adjusted value in #{@latest_year} dollars."
     @canonical_path = cost_page_path(@item.slug, @year)
   end

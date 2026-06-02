@@ -8,7 +8,7 @@ servers:
 
 proxy:
   ssl: true
-  host: cookedfiat.com
+  host: fiat.watch
 
 registry:
   username: gradeycullins
@@ -39,4 +39,3 @@ builder:
 
 ssh:
   user: gb
-

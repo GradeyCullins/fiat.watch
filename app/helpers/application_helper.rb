@@ -1,8 +1,8 @@
 module ApplicationHelper
-  DEFAULT_PAGE_TITLE = "US Inflation Calculator With CPI Data | Cooked Fiat".freeze
+  DEFAULT_PAGE_TITLE = "US Inflation Calculator With CPI Data | Fiat Watch".freeze
   DEFAULT_META_DESCRIPTION = "Calculate what any US dollar amount was really worth in any year using official Bureau of Labor Statistics CPI data.".freeze
   DEFAULT_OG_IMAGE_PATH = "/opengraph-card.png".freeze
-  DEFAULT_OG_IMAGE_ALT = "Cooked Fiat inflation calculator social preview card".freeze
+  DEFAULT_OG_IMAGE_ALT = "Fiat Watch inflation calculator social preview card".freeze
 
   def page_title
     @page_title.presence || DEFAULT_PAGE_TITLE

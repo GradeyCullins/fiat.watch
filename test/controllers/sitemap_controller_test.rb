@@ -20,8 +20,8 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
     get html_sitemap_path
 
     assert_response :success
-    assert_select "title", "Sitemap | Cooked Fiat"
-    assert_select "h1", "Cooked Fiat sitemap"
+    assert_select "title", "Sitemap | Fiat Watch"
+    assert_select "h1", "Fiat Watch sitemap"
     assert_select "a[href=?]", root_path, text: "US inflation calculator"
     assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
     assert_select "a[href=?]", cost_page_path("gas", 1980), text: "1980"

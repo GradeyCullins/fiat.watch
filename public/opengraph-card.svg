@@ -1,6 +1,6 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
-  <title id="title">Cooked Fiat Open Graph image</title>
-  <desc id="desc">A bold social card for the Cooked Fiat inflation calculator with red, yellow, blue, and black graphic blocks.</desc>
+  <title id="title">Fiat Watch Open Graph image</title>
+  <desc id="desc">A bold social card for the Fiat Watch inflation calculator with red, yellow, blue, and black graphic blocks.</desc>
 
   <rect width="1200" height="630" fill="#FAF7F2"/>
   <rect x="0" y="452" width="1200" height="178" fill="#0A0A0A"/>
@@ -12,10 +12,10 @@
   <circle cx="1116" cy="170" r="14" fill="#1A56DB"/>
 
   <text x="106" y="142" fill="#FAF7F2" font-family="Arial Black, Arial, sans-serif" font-size="66" font-weight="900" letter-spacing="-1.5">
-    cooked
+    fiat
   </text>
   <text x="454" y="279" fill="#0A0A0A" font-family="Georgia, Times New Roman, serif" font-size="76" font-weight="700" letter-spacing="-2">
-    fiat
+    watch
   </text>
   <text x="114" y="418" fill="#FAF7F2" font-family="Arial Black, Arial, sans-serif" font-size="52" font-weight="900" letter-spacing="-1">
     INFLATION CALCULATOR

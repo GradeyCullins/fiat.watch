@@ -18,8 +18,8 @@ class SitemapController < ApplicationController
   end
 
   def show
-    @page_title = "Sitemap | Cooked Fiat"
-    @meta_description = "Browse Cooked Fiat inflation calculators and historical cost pages."
+    @page_title = "Sitemap | Fiat Watch"
+    @meta_description = "Browse Fiat Watch inflation calculators and historical cost pages."
     @canonical_path = html_sitemap_path
     @calculator_pages = CALCULATOR_PAGES.map { |label, route| [ label, public_send(route) ] }
     @cost_pages = AveragePriceCatalog.entries.group_by(&:first)

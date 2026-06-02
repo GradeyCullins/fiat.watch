@@ -5,8 +5,8 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     get root_path
 
     assert_response :success
-    assert_select "title", "US Inflation Calculator With CPI Data | Cooked Fiat"
-    assert_select "meta[property=?][content=?]", "og:title", "US Inflation Calculator With CPI Data | Cooked Fiat"
+    assert_select "title", "US Inflation Calculator With CPI Data | Fiat Watch"
+    assert_select "meta[property=?][content=?]", "og:title", "US Inflation Calculator With CPI Data | Fiat Watch"
     assert_select "meta[property=?][content$=?]", "og:url", "/"
     assert_select "meta[property=?][content$=?]", "og:image", "/opengraph-card.png"
     assert_select "meta[name=?][content$=?]", "twitter:image", "/opengraph-card.png"
@@ -16,7 +16,7 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     get calculation_path, params: { amount: "100", from_year: "2000", to_year: CpiCalculator.latest_year }
 
     assert_response :success
-    assert_select "meta[property=?][content=?]", "og:title", "CPI Inflation Calculator: 2000 to #{CpiCalculator.latest_year} | Cooked Fiat"
+    assert_select "meta[property=?][content=?]", "og:title", "CPI Inflation Calculator: 2000 to #{CpiCalculator.latest_year} | Fiat Watch"
     assert_select "meta[property=?][content*=?]", "og:description", "same purchasing power"
     assert_select "[data-analytics-event-name-value=?]", "calculation_completed"
     assert_select "[data-analytics-params-value*=?]", '"amount":100.0'
@@ -24,7 +24,7 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-analytics-params-value*=?]", '"to_year":' + CpiCalculator.latest_year.to_s
     assert_select "aside[aria-label=?]", "Advertising" do
       assert_select "p", text: "Your ad here"
-      assert_select "a[href^=?]", "mailto:ads@cookedfiat.com"
+      assert_select "a[href^=?]", "mailto:ads@fiat.watch"
     end
   end
 

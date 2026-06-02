@@ -45,10 +45,10 @@ class CalculationsController < ApplicationController
 
   def set_seo_for_index
     if @result
-      @page_title = "CPI Inflation Calculator: #{@result.from_year} to #{@result.to_year} | Cooked Fiat"
+      @page_title = "CPI Inflation Calculator: #{@result.from_year} to #{@result.to_year} | Fiat Watch"
       @meta_description = "#{@result.amount_formatted} in #{@result.from_year} has the same purchasing power as #{@result.converted_formatted} in #{@result.to_year}. #{@result.cumulative_inflation_text} CPI-based inflation calculator."
     else
-      @page_title = "US Inflation Calculator With CPI Data | Cooked Fiat"
+      @page_title = "US Inflation Calculator With CPI Data | Fiat Watch"
       @meta_description = "Find out what your money was really worth. Compare the purchasing power of any US dollar amount between #{CpiCalculator.earliest_year} and #{CpiCalculator.latest_year} using official BLS CPI data."
     end
     @canonical_path = canonical_path_for_current_request

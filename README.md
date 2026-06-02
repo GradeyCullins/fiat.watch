@@ -1,6 +1,6 @@
-# Cooked Fiat
+# Fiat Watch
 
-Cooked Fiat is a Rails inflation calculator powered by U.S. BLS CPI-U data.
+Fiat Watch is a Rails inflation calculator powered by U.S. BLS CPI-U data.
 
 ## Analytics
 
