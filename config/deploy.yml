@@ -8,7 +8,9 @@ servers:
 
 proxy:
   ssl: true
-  host: fiat.watch
+  hosts: 
+    - fiat.watch
+    - www.fiat.watch
 
 registry:
   username: gradeycullins
