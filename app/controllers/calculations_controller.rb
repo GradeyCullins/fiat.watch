@@ -1,5 +1,6 @@
 class CalculationsController < ApplicationController
   before_action :set_year_options
+  before_action :set_ticker_items
 
   def index
     @amount = params[:amount].presence
@@ -36,6 +37,29 @@ class CalculationsController < ApplicationController
 
   def set_year_options
     @year_options = CpiCalculator.years.reverse
+  end
+
+  def set_ticker_items
+    latest_year = CpiCalculator.latest_year
+
+    @ticker_items = [
+      ticker_item(label: "Thirty-year check", amount: 100, from_year: default_from_year, to_year: latest_year),
+      ticker_item(label: "A 1913 dollar", amount: 1, from_year: CpiCalculator.earliest_year, to_year: latest_year),
+      ticker_item(label: "Postwar prices", amount: 20, from_year: 1950, to_year: latest_year),
+      ticker_item(label: "Seventies money", amount: 50, from_year: 1976, to_year: latest_year),
+      ticker_item(label: "Great recession", amount: 500, from_year: 2008, to_year: latest_year),
+      ticker_item(label: "Pre-pandemic", amount: 100, from_year: 2019, to_year: latest_year)
+    ]
+  end
+
+  def ticker_item(label:, amount:, from_year:, to_year:)
+    result = CpiCalculator.convert(amount: amount, from_year: from_year, to_year: to_year)
+
+    {
+      label: label,
+      from_text: "#{result.amount_formatted} in #{result.from_year}",
+      to_text: "#{result.converted_formatted} in #{result.to_year}"
+    }
   end
 
   def default_from_year
