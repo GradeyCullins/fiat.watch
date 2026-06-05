@@ -36,12 +36,12 @@
 <section class="mx-auto grid w-full max-w-7xl gap-6 px-5 py-4 sm:px-8 sm:py-6 lg:grid-cols-[0.82fr_1fr] lg:items-start lg:gap-10 lg:py-10" aria-labelledby="calc-heading">
   <div class="order-2 lg:order-1">
     <h1 class="flex flex-col gap-2 font-display text-4xl font-black leading-[0.94] sm:text-6xl lg:text-7xl xl:text-8xl">
-      <span class="w-fit -rotate-1 bg-[#cc0000] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">Spending</span>
-      <span class="ml-3 w-fit rotate-1 bg-[#ffd400] px-3 py-1.5 text-[#0a0a0a] shadow-[7px_7px_0_#0a0a0a] sm:ml-10 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a] lg:ml-8">$X in <em>year A</em></span>
-      <span class="w-fit -rotate-1 bg-[#1a56db] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">is like spending</span>
-      <span class="ml-2 w-fit rotate-1 bg-[#0a0a0a] px-3 py-1.5 text-[#ffd400] shadow-[7px_7px_0_#cc0000] sm:ml-16 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#cc0000] lg:ml-12">$Y in <em>year B</em>.</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#cc0000] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">Spending</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-3 inline-block w-fit rotate-1 bg-[#ffd400] px-3 py-1.5 text-[#0a0a0a] shadow-[7px_7px_0_#0a0a0a] sm:ml-10 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a] lg:ml-8">$X in <em>year A</em></span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#1a56db] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">is like spending</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-2 inline-block w-fit rotate-1 bg-[#0a0a0a] px-3 py-1.5 text-[#ffd400] shadow-[7px_7px_0_#cc0000] sm:ml-16 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#cc0000] lg:ml-12">$Y in <em>year B</em>.</span>
     </h1>
-    <p class="mt-6 max-w-xl rotate-1 border-4 border-[#0a0a0a] bg-white p-4 text-lg font-bold leading-snug shadow-[8px_8px_0_#1a56db] sm:p-5 sm:text-xl sm:shadow-[10px_10px_0_#1a56db]">
+    <p data-controller="hover-tilt" data-hover-tilt-max-value="5" data-hover-tilt-lift-value="5" class="mt-6 max-w-xl rotate-1 border-4 border-[#0a0a0a] bg-white p-4 text-lg font-bold leading-snug shadow-[8px_8px_0_#1a56db] sm:p-5 sm:text-xl sm:shadow-[10px_10px_0_#1a56db]">
       Pick a year, pick an amount. We crunch official BLS Consumer Price Index data
       and show you what those dollars are really worth today (or any other year you choose).
     </p>
@@ -50,7 +50,7 @@
   <div class="order-1 lg:order-2">
     <h2 id="calc-heading" class="sr-only">Inflation calculator</h2>
 
-    <%= form_with url: calculation_path, method: :get, data: { turbo_frame: "result", turbo_action: "advance" }, class: "rounded-none border-4 border-[#0a0a0a] bg-white p-4 shadow-[8px_8px_0_#cc0000] sm:p-6 sm:shadow-[12px_12px_0_#cc0000] lg:p-8" do |f| %>
+    <%= form_with url: calculation_path, method: :get, data: { turbo_frame: "result", turbo_action: "advance", controller: "hover-tilt", hover_tilt_max_value: 4, hover_tilt_lift_value: 6, hover_tilt_perspective_value: 900 }, class: "rounded-none border-4 border-[#0a0a0a] bg-white p-4 shadow-[8px_8px_0_#cc0000] sm:p-6 sm:shadow-[12px_12px_0_#cc0000] lg:p-8" do |f| %>
     <div class="grid gap-4 sm:grid-cols-[minmax(0,1.35fr)_minmax(10rem,0.65fr)] sm:items-end">
       <div class="flex flex-col gap-2">
         <%= f.label :amount, "Amount", class: "text-sm font-black uppercase text-[#444]" %>
@@ -75,7 +75,7 @@
       </div>
     </div>
 
-    <button type="submit" class="mt-5 w-full border-4 border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3 font-display text-2xl font-black uppercase text-[#ffd400] shadow-[8px_8px_0_#1a56db] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[11px_11px_0_#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none focus:shadow-[11px_11px_0_#cc0000] active:translate-x-1 active:translate-y-1 active:shadow-[5px_5px_0_#1a56db] sm:mt-6 sm:w-auto sm:px-8 sm:py-4 sm:text-3xl sm:shadow-[10px_10px_0_#1a56db] sm:hover:shadow-[13px_13px_0_#cc0000] sm:focus:shadow-[13px_13px_0_#cc0000]">
+    <button type="submit" data-hover-tilt-ignore class="mt-5 w-full border-4 border-[#0a0a0a] bg-[#0a0a0a] px-6 py-3 font-display text-2xl font-black uppercase text-[#ffd400] shadow-[8px_8px_0_#1a56db] transition duration-150 ease-out hover:bg-[#cc0000] hover:text-white hover:shadow-[11px_11px_0_#1a56db] focus:outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-[#1a56db] focus-visible:shadow-[11px_11px_0_#cc0000] active:bg-[#1a56db] active:shadow-[5px_5px_0_#cc0000] sm:mt-6 sm:w-auto sm:px-8 sm:py-4 sm:text-3xl sm:shadow-[10px_10px_0_#1a56db] sm:hover:shadow-[13px_13px_0_#1a56db] sm:focus-visible:shadow-[13px_13px_0_#cc0000]">
       Calculate
     </button>
     <% end %>
