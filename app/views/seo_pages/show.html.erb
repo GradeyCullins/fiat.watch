@@ -1,3 +1,20 @@
+<% content_for :head do %>
+  <script type="application/ld+json"><%= raw({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": @page.fetch(:faq).map { |entry|
+      {
+        "@type": "Question",
+        "name": entry.fetch(:question),
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": entry.fetch(:answer)
+        }
+      }
+    }
+  }.to_json) %></script>
+<% end %>
+
 <section class="mx-auto grid min-h-[calc(100svh-11rem)] w-full max-w-7xl content-center gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-8">
   <div>
     <p class="w-fit -rotate-1 bg-[#ffd400] px-3 py-2 font-display text-base font-black uppercase text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] sm:text-xl">Fiat Watch</p>
@@ -15,6 +32,61 @@
         <li class="border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 shadow-[5px_5px_0_#0a0a0a]"><%= example %></li>
       <% end %>
     </ul>
-    <a class="mt-5 inline-flex border-4 border-[#0a0a0a] bg-[#0a0a0a] px-5 py-3 font-display text-xl font-black uppercase text-[#ffd400] shadow-[6px_6px_0_#cc0000] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="/#calc-heading">Open calculator</a>
+    <a class="mt-5 inline-flex border-4 border-[#0a0a0a] bg-[#0a0a0a] px-5 py-3 font-display text-xl font-black uppercase text-[#ffd400] shadow-[6px_6px_0_#cc0000] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= root_path(anchor: "calc-heading") %>">Open calculator</a>
   </aside>
+</section>
+
+<section class="mx-auto w-full max-w-7xl px-5 pb-16 pt-6 text-[#0a0a0a] sm:px-8">
+  <div class="grid gap-10 border-t-4 border-[#0a0a0a] pt-10 lg:grid-cols-[1fr_0.9fr]">
+    <section aria-labelledby="use-cases-heading">
+      <h2 id="use-cases-heading" class="font-display text-4xl font-black text-[#cc0000]">When to use this calculator</h2>
+      <ul class="mt-5 grid gap-3 text-lg font-bold leading-snug">
+        <% @page.fetch(:use_cases).each do |use_case| %>
+          <li class="border-l-4 border-[#1a56db] bg-white py-2 pl-4"><%= use_case %></li>
+        <% end %>
+      </ul>
+      <p class="mt-5 text-lg font-semibold leading-relaxed text-[#444]">
+        Need a different amount or year? Use the
+        <a class="font-black text-[#1a56db] underline decoration-2 underline-offset-4 hover:text-[#cc0000]" href="<%= root_path(anchor: "calc-heading") %>">full CPI inflation calculator</a>
+        to compare any U.S. dollar amount from <%= CpiCalculator.earliest_year %> through <%= CpiCalculator.latest_year %>.
+      </p>
+    </section>
+
+    <section aria-labelledby="examples-heading">
+      <h2 id="examples-heading" class="font-display text-4xl font-black text-[#cc0000]">Example searches</h2>
+      <p class="mt-4 text-lg font-semibold leading-relaxed text-[#444]">
+        These examples all use annual CPI-U data from the U.S. Bureau of Labor Statistics.
+      </p>
+      <ul class="mt-5 grid gap-3 text-base font-black sm:grid-cols-3 lg:grid-cols-1">
+        <% @page.fetch(:examples).each do |example| %>
+          <li>
+            <a class="block border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= root_path(anchor: "calc-heading") %>"><%= example %></a>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  </div>
+
+  <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="faq-heading">
+    <h2 id="faq-heading" class="font-display text-4xl font-black text-[#cc0000]">Frequently asked questions</h2>
+    <dl class="mt-5 grid gap-6 lg:grid-cols-3">
+      <% @page.fetch(:faq).each do |entry| %>
+        <div>
+          <dt class="text-xl font-black leading-snug"><%= entry.fetch(:question) %></dt>
+          <dd class="mt-2 text-base font-semibold leading-relaxed text-[#444]"><%= entry.fetch(:answer) %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </section>
+
+  <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="related-calculators-heading">
+    <h2 id="related-calculators-heading" class="font-display text-4xl font-black text-[#cc0000]">More CPI calculators</h2>
+    <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <% calculator_page_links.reject { |_, path| path == @page.fetch(:path) }.each do |label, path| %>
+        <li>
+          <a class="block border-4 border-[#0a0a0a] bg-white px-4 py-3 font-black text-[#0a0a0a] shadow-[5px_5px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= path %>"><%= label %></a>
+        </li>
+      <% end %>
+    </ul>
+  </section>
 </section>

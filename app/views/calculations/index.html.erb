@@ -128,14 +128,14 @@
 
   <div class="order-2 lg:order-1">
     <h1 class="flex flex-col gap-2 font-display text-4xl font-black leading-[0.94] sm:text-6xl lg:text-7xl xl:text-8xl">
-      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#cc0000] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">Spending</span>
-      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-3 inline-block w-fit rotate-1 bg-[#ffd400] px-3 py-1.5 text-[#0a0a0a] shadow-[7px_7px_0_#0a0a0a] sm:ml-10 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a] lg:ml-8">$X in <em>year A</em></span>
-      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#1a56db] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">is like spending</span>
-      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-2 inline-block w-fit rotate-1 bg-[#0a0a0a] px-3 py-1.5 text-[#ffd400] shadow-[7px_7px_0_#cc0000] sm:ml-16 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#cc0000] lg:ml-12">$Y in <em>year B</em>.</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#cc0000] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">US inflation</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-3 inline-block w-fit rotate-1 bg-[#ffd400] px-3 py-1.5 text-[#0a0a0a] shadow-[7px_7px_0_#0a0a0a] sm:ml-10 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a] lg:ml-8">calculator</span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="inline-block w-fit -rotate-1 bg-[#1a56db] px-3 py-1.5 text-white shadow-[7px_7px_0_#0a0a0a] sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#0a0a0a]">$X in <em>year A</em></span>
+      <span data-controller="hover-tilt" data-hover-tilt-max-value="6" data-hover-tilt-lift-value="3" class="ml-2 inline-block w-fit rotate-1 bg-[#0a0a0a] px-3 py-1.5 text-[#ffd400] shadow-[7px_7px_0_#cc0000] sm:ml-16 sm:px-4 sm:py-2 sm:shadow-[9px_9px_0_#cc0000] lg:ml-12">equals $Y in <em>year B</em>.</span>
     </h1>
     <p data-controller="hover-tilt" data-hover-tilt-max-value="5" data-hover-tilt-lift-value="5" class="mt-6 max-w-xl rotate-1 border-4 border-[#0a0a0a] bg-white p-4 text-lg font-bold leading-snug shadow-[8px_8px_0_#1a56db] sm:p-5 sm:text-xl sm:shadow-[10px_10px_0_#1a56db]">
-      Pick a year, pick an amount. We crunch official BLS Consumer Price Index data
-      and show you what those dollars are really worth today (or any other year you choose).
+      Use this CPI inflation calculator to compare any dollar amount between years. We crunch official BLS Consumer Price Index data
+      and show you what those dollars are really worth today, or any other year you choose.
     </p>
   </div>
 
@@ -192,6 +192,18 @@
     We use the annual averages of the CPI-U (All Urban Consumers, series CUUR0000SA0) so the
     result reflects a typical year, not a single noisy month.
   </p>
+
+  <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Popular CPI calculators</h2>
+  <p class="mt-4">
+    For common budget questions, use a focused calculator with examples for that cost category.
+  </p>
+  <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+    <% calculator_page_links.each do |label, path| %>
+      <li>
+        <a class="block border-4 border-[#0a0a0a] bg-white px-4 py-3 font-black text-[#0a0a0a] shadow-[5px_5px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= path %>"><%= label %></a>
+      </li>
+    <% end %>
+  </ul>
 
   <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Frequently asked questions</h2>
   <dl>

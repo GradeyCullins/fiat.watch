@@ -10,6 +10,18 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "meta[property=?][content$=?]", "og:url", "/"
     assert_select "meta[property=?][content$=?]", "og:image", "/opengraph-card.png"
     assert_select "meta[name=?][content$=?]", "twitter:image", "/opengraph-card.png"
+    assert_select "h1", /US inflation\s+calculator/
+    [
+      salary_inflation_calculator_path,
+      rent_inflation_calculator_path,
+      grocery_inflation_calculator_path,
+      gas_inflation_calculator_path,
+      car_price_inflation_calculator_path,
+      college_tuition_inflation_calculator_path,
+      minimum_wage_inflation_calculator_path
+    ].each do |path|
+      assert_select "a[href=?]", path
+    end
   end
 
   test "successful calculation renders analytics event data and sponsor slot" do
