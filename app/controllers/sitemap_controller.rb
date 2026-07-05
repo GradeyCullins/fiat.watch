@@ -38,6 +38,12 @@ class SitemapController < ApplicationController
       { loc: college_tuition_inflation_calculator_url, priority: 0.8 },
       { loc: minimum_wage_inflation_calculator_url, priority: 0.8 }
     ]
+    AveragePriceCatalog.all.each do |item|
+      entries << {
+        loc: cost_item_url(item.slug),
+        priority: 0.8
+      }
+    end
     AveragePriceCatalog.entries.each do |item, year, _price|
       entries << {
         loc: cost_page_url(item.slug, year),

@@ -61,6 +61,7 @@ class SeoPagesController < ApplicationController
       description: "Compare grocery spending across years with official BLS CPI data. Estimate what past food budgets mean in today's dollars.",
       intro: "Grocery budgets make inflation tangible. Convert an old weekly or monthly grocery bill into another year's dollars using the same CPI engine as the main calculator.",
       examples: [ "$50 in 1995", "$125 in 2008", "$300 in 2020" ],
+      cost_items: [ "eggs", "bread", "milk", "ground-beef" ],
       use_cases: [
         "Compare weekly or monthly grocery spending across years.",
         "Translate old food budgets into today's dollars.",
@@ -88,6 +89,7 @@ class SeoPagesController < ApplicationController
       description: "Compare gas prices across years with official BLS CPI data. Convert old fuel costs into today's dollars.",
       intro: "Gas prices are one of the easiest ways to feel inflation. Convert an old fill-up, gallon price, or fuel budget into another year's dollars.",
       examples: [ "$1.25 in 1980", "$1.51 in 2000", "$2.17 in 2020" ],
+      cost_items: [ "gas" ],
       use_cases: [
         "Compare a historical gas price per gallon with today's dollars.",
         "Convert an old fill-up or monthly fuel budget across years.",
@@ -193,6 +195,7 @@ class SeoPagesController < ApplicationController
 
   def show
     @page = PAGES.fetch(params[:page])
+    @historical_price_items = @page.fetch(:cost_items, []).map { |slug| AveragePriceCatalog.find(slug) }
     @page_title = @page.fetch(:title)
     @meta_description = @page.fetch(:description)
     @canonical_path = @page.fetch(:path)

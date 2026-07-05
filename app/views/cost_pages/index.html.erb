@@ -1,0 +1,42 @@
+<section class="mx-auto grid min-h-[calc(100svh-11rem)] w-full max-w-7xl content-center gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:py-8">
+  <div>
+    <p class="w-fit -rotate-1 bg-[#ffd400] px-3 py-2 font-display text-base font-black uppercase text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] sm:text-xl">BLS average price</p>
+    <h1 class="mt-5 max-w-4xl font-display text-5xl font-black leading-[0.94] text-[#cc0000] sm:text-7xl lg:text-8xl"><%= @historical_heading %></h1>
+    <p class="mt-5 max-w-3xl text-xl font-black leading-snug text-[#0a0a0a] sm:text-2xl">
+      Browse average <%= @item.question_name %> prices from <%= @price_rows.last.fetch(:year) %> through <%= @price_rows.first.fetch(:year) %>,
+      then compare each price with <%= @latest_year %> dollars.
+    </p>
+  </div>
+
+  <aside class="border-4 border-[#0a0a0a] bg-white p-5 shadow-[10px_10px_0_#1a56db] sm:p-6">
+    <h2 class="font-display text-4xl font-black text-[#0a0a0a]">All available years</h2>
+    <p class="mt-3 text-lg font-semibold leading-snug text-[#444]">
+      Source: <a class="text-[#1a56db] underline decoration-2 underline-offset-4" href="<%= AveragePriceCatalog.source_url %>" rel="noopener noreferrer"><%= AveragePriceCatalog.source_name %></a>.
+    </p>
+    <a class="mt-5 inline-flex border-4 border-[#0a0a0a] bg-[#0a0a0a] px-5 py-3 font-display text-xl font-black uppercase text-[#ffd400] shadow-[6px_6px_0_#cc0000] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= @calculator_link.second %>"><%= @calculator_link.first %></a>
+  </aside>
+</section>
+
+<section class="mx-auto w-full max-w-7xl px-5 pb-16 pt-6 text-[#0a0a0a] sm:px-8" aria-labelledby="year-links-heading">
+  <h2 id="year-links-heading" class="font-display text-4xl font-black text-[#cc0000]"><%= @item.question_name.capitalize %> prices by year</h2>
+  <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <% @price_rows.each do |row| %>
+      <a class="block border-4 border-[#0a0a0a] bg-white p-4 text-[#0a0a0a] shadow-[6px_6px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_page_path(@item.slug, row.fetch(:year)) %>">
+        <span class="block font-display text-3xl font-black"><%= @item.question_name.capitalize %> in <%= row.fetch(:year) %></span>
+        <span class="mt-2 block text-lg font-bold"><%= number_to_currency(row.fetch(:price)) %> <%= @item.unit %></span>
+        <span class="mt-1 block text-sm font-bold text-[#555]"><%= row.fetch(:adjusted_price) %> in <%= @latest_year %> dollars</span>
+      </a>
+    <% end %>
+  </div>
+
+  <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="related-hubs-heading">
+    <h2 id="related-hubs-heading" class="font-display text-4xl font-black text-[#cc0000]">More historical prices</h2>
+    <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <% @related_items.each do |item| %>
+        <li>
+          <a class="block border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 font-black text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_item_path(item.slug) %>"><%= historical_price_link_label(item) %></a>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+</section>

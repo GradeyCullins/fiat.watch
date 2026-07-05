@@ -22,6 +22,15 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     ].each do |path|
       assert_select "a[href=?]", path
     end
+    [
+      cost_item_path("gas"),
+      cost_item_path("eggs"),
+      cost_item_path("bread"),
+      cost_item_path("milk"),
+      cost_item_path("ground-beef")
+    ].each do |path|
+      assert_select "a[href=?]", path
+    end
   end
 
   test "successful calculation renders analytics event data and sponsor slot" do

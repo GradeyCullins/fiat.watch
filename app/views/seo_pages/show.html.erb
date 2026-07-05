@@ -79,6 +79,22 @@
     </dl>
   </section>
 
+  <% if @historical_price_items.any? %>
+    <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="historical-prices-heading">
+      <h2 id="historical-prices-heading" class="font-display text-4xl font-black text-[#cc0000]">Historical prices</h2>
+      <p class="mt-4 text-lg font-semibold leading-relaxed text-[#444]">
+        Browse BLS average price pages for item-specific year comparisons.
+      </p>
+      <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <% @historical_price_items.each do |item| %>
+          <li>
+            <a class="block border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 font-black text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_item_path(item.slug) %>"><%= historical_price_link_label(item) %></a>
+          </li>
+        <% end %>
+      </ul>
+    </section>
+  <% end %>
+
   <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="related-calculators-heading">
     <h2 id="related-calculators-heading" class="font-display text-4xl font-black text-[#cc0000]">More CPI calculators</h2>
     <ul class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

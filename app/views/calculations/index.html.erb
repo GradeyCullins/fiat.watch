@@ -205,6 +205,18 @@
     <% end %>
   </ul>
 
+  <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Historical prices</h2>
+  <p class="mt-4">
+    Browse BLS average prices by item, then open year-specific pages for inflation-adjusted comparisons.
+  </p>
+  <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+    <% historical_price_links.each do |label, path| %>
+      <li>
+        <a class="block border-4 border-[#0a0a0a] bg-white px-4 py-3 font-black text-[#0a0a0a] shadow-[5px_5px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= path %>"><%= label %></a>
+      </li>
+    <% end %>
+  </ul>
+
   <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">Frequently asked questions</h2>
   <dl>
     <dt class="mt-5 font-black">What years are supported?</dt>

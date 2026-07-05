@@ -12,6 +12,13 @@ module ApplicationHelper
     [ "College tuition inflation calculator", :college_tuition_inflation_calculator_path ],
     [ "Minimum wage inflation calculator", :minimum_wage_inflation_calculator_path ]
   ].freeze
+  HISTORICAL_PRICE_LINK_LABELS = {
+    "gas" => "Historical gas prices",
+    "eggs" => "Historical egg prices",
+    "bread" => "Historical bread prices",
+    "milk" => "Historical milk prices",
+    "ground-beef" => "Historical ground beef prices"
+  }.freeze
 
   def page_title
     @page_title.presence || DEFAULT_PAGE_TITLE
@@ -35,5 +42,15 @@ module ApplicationHelper
 
   def calculator_page_links
     CALCULATOR_PAGE_LINKS.map { |label, route| [ label, public_send(route) ] }
+  end
+
+  def historical_price_links
+    AveragePriceCatalog.all.map do |item|
+      [ historical_price_link_label(item), cost_item_path(item.slug) ]
+    end
+  end
+
+  def historical_price_link_label(item)
+    HISTORICAL_PRICE_LINK_LABELS.fetch(item.slug)
   end
 end

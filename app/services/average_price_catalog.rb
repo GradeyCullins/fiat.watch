@@ -44,6 +44,10 @@ class AveragePriceCatalog
       )
     end
 
+    def all
+      items.keys.map { |slug| find(slug) }
+    end
+
     def find_price(slug:, year:)
       item = find(slug)
       price = item.price_for(year)

@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   get "car-price-inflation-calculator" => "seo_pages#show", as: :car_price_inflation_calculator, defaults: { page: "car_prices" }
   get "college-tuition-inflation-calculator" => "seo_pages#show", as: :college_tuition_inflation_calculator, defaults: { page: "college_tuition" }
   get "minimum-wage-inflation-calculator" => "seo_pages#show", as: :minimum_wage_inflation_calculator, defaults: { page: "minimum_wage" }
+  get "costs/:item" => "cost_pages#index", as: :cost_item
   get "costs/:item/:year" => "cost_pages#show", as: :cost_page, constraints: { year: /\d{4}/ }
 
   resource :calculation, only: [ :show ], controller: "calculations"

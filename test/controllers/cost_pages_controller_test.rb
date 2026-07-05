@@ -11,6 +11,11 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "How much did gas cost in 1980?"
     assert_select "p", /Gas averaged \$1\.25 per gallon in 1980/
     assert_select "a[href*=?]", calculation_path
+    assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
+    assert_select "a[href=?]", cost_page_path("gas", 1990), text: "Gas prices in 1990"
+    assert_select "a[href=?]", cost_page_path("eggs", 1980)
+    assert_select "a[href=?]", cost_page_path("bread", 1980)
+    assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
     assert_select "p", /APU000074714/
   end
 
@@ -22,6 +27,25 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "How much did ground beef cost in 2020?"
     assert_select "p", /Ground beef averaged \$4\.12 per pound in 2020/
     assert_select "p", /APU0000703112/
+  end
+
+  test "cost item hub links to all available year pages" do
+    get cost_item_path("gas")
+
+    assert_response :success
+    assert_select "title", "Historical Gas Prices by Year | Fiat Watch"
+    assert_select "link[rel=?][href$=?]", "canonical", cost_item_path("gas")
+    assert_select "h1", "Historical gas prices by year"
+    assert_select "a[href=?]", cost_page_path("gas", 1980), text: /Gas in 1980/
+    assert_select "a[href=?]", cost_page_path("gas", 2025), text: /Gas in 2025/
+    assert_select "a[href=?]", cost_item_path("eggs"), text: "Historical egg prices"
+    assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
+  end
+
+  test "unknown cost item hub returns not found" do
+    get cost_item_path("coffee")
+
+    assert_response :not_found
   end
 
   test "unknown cost page returns not found" do

@@ -38,6 +38,10 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "title", "Grocery Inflation Calculator With CPI Data | Fiat Watch"
     assert_select "h1", "Grocery inflation calculator"
     assert_select "dt", "How do I calculate grocery inflation?"
+    assert_select "a[href=?]", cost_item_path("eggs"), text: "Historical egg prices"
+    assert_select "a[href=?]", cost_item_path("bread"), text: "Historical bread prices"
+    assert_select "a[href=?]", cost_item_path("milk"), text: "Historical milk prices"
+    assert_select "a[href=?]", cost_item_path("ground-beef"), text: "Historical ground beef prices"
   end
 
   test "new calculator intent pages render expanded content" do
@@ -48,6 +52,7 @@ class SeoPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Gas inflation calculator"
     assert_select "a[href=?]", root_path(anchor: "calc-heading")
     assert_select "dt", "How do I calculate gas price inflation?"
+    assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
 
     get car_price_inflation_calculator_path
     assert_response :success

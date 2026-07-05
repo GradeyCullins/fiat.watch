@@ -12,6 +12,8 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, car_price_inflation_calculator_url
     assert_includes response.body, college_tuition_inflation_calculator_url
     assert_includes response.body, minimum_wage_inflation_calculator_url
+    assert_includes response.body, cost_item_url("gas")
+    assert_includes response.body, cost_item_url("ground-beef")
     assert_includes response.body, cost_page_url("gas", 1980)
     assert_includes response.body, cost_page_url("ground-beef", 2020)
   end
@@ -24,6 +26,8 @@ class SitemapControllerTest < ActionDispatch::IntegrationTest
     assert_select "h1", "Fiat Watch sitemap"
     assert_select "a[href=?]", root_path, text: "US inflation calculator"
     assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
+    assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
+    assert_select "a[href=?]", cost_item_path("ground-beef"), text: "Historical ground beef prices"
     assert_select "a[href=?]", cost_page_path("gas", 1980), text: "1980"
     assert_select "a[href=?]", cost_page_path("ground-beef", 2020), text: "2020"
     assert_select "a[href=?]", sitemap_path, text: "sitemap.xml"
