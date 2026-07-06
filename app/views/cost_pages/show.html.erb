@@ -92,4 +92,18 @@
       </section>
     <% end %>
   </div>
+
+  <% if @month_rows.any? %>
+    <section class="mt-12 border-t-4 border-[#0a0a0a] pt-10" aria-labelledby="monthly-prices-heading">
+      <h2 id="monthly-prices-heading" class="font-display text-4xl font-black text-[#cc0000]">Monthly <%= @item.question_name %> prices in <%= @year %></h2>
+      <div class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <% @month_rows.each do |row| %>
+          <a class="block border-4 border-[#0a0a0a] bg-white p-4 text-[#0a0a0a] shadow-[6px_6px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_month_page_path(@item.slug, @year, format("%02d", row.fetch(:month))) %>">
+            <span class="block font-display text-2xl font-black"><%= row.fetch(:month_name) %> <%= @year %></span>
+            <span class="mt-2 block text-lg font-bold"><%= number_to_currency(row.fetch(:price)) %> <%= @item.unit %></span>
+          </a>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
 </section>

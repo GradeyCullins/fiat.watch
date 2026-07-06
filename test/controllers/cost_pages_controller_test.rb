@@ -12,7 +12,7 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "p", /Gas averaged \$1\.25 per gallon in 1980/
     assert_select "a[href*=?]", calculation_path
     assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
-    assert_select "a[href=?]", cost_page_path("gas", 1990), text: "Gas prices in 1990"
+    assert_select "a[href=?]", cost_page_path("gas", 1981), text: "Gas prices in 1981"
     assert_select "a[href=?]", cost_page_path("eggs", 1980)
     assert_select "a[href=?]", cost_page_path("bread", 1980)
     assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
@@ -50,6 +50,42 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
 
   test "unknown cost page returns not found" do
     get cost_page_path("milk", 1980)
+
+    assert_response :not_found
+  end
+
+  test "gas month page renders historical price and adjusted value" do
+    get cost_month_page_path("gas", 2015, "03")
+
+    assert_response :success
+    assert_select "title", "How Much Did Gas Cost in March 2015? | Fiat Watch"
+    assert_select "link[rel=?][href$=?]", "canonical", cost_month_page_path("gas", 2015, "03")
+    assert_select "h1", "How much did gas cost in March 2015?"
+    assert_select "p", /Gas averaged \$2\.48 per gallon in March 2015/
+    assert_select "a[href=?]", cost_page_path("gas", 2015), text: "Gas prices in 2015"
+    assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
+    assert_select "a[href=?]", cost_month_page_path("gas", 2015, "02"), text: "Gas prices in February 2015"
+    assert_select "a[href=?]", cost_month_page_path("gas", 2015, "04"), text: "Gas prices in April 2015"
+    assert_select "a[href=?]", cost_month_page_path("eggs", 2015, "03")
+    assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
+  end
+
+  test "gas year page links to its monthly price pages" do
+    get cost_page_path("gas", 2015)
+
+    assert_response :success
+    assert_select "a[href=?]", cost_month_page_path("gas", 2015, "01"), text: /January 2015/
+    assert_select "a[href=?]", cost_month_page_path("gas", 2015, "12"), text: /December 2015/
+  end
+
+  test "unknown cost month page returns not found" do
+    get cost_month_page_path("gas", 2015, "13")
+
+    assert_response :not_found
+  end
+
+  test "cost month page for a year outside item coverage returns not found" do
+    get cost_month_page_path("milk", 1980, "01")
 
     assert_response :not_found
   end
