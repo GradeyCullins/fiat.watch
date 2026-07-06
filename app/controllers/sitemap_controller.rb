@@ -50,6 +50,14 @@ class SitemapController < ApplicationController
         priority: 0.8
       }
     end
+    AveragePriceMonthlyCatalog.all.each do |item|
+      item.entries.each do |year, month, _price|
+        entries << {
+          loc: cost_month_page_url(item.slug, year, format("%02d", month)),
+          priority: 0.6
+        }
+      end
+    end
     HIGHLIGHT_FROM_YEARS.each do |from_year|
       HIGHLIGHT_AMOUNTS.each do |amount|
         entries << {

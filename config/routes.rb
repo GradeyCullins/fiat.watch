@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   get "minimum-wage-inflation-calculator" => "seo_pages#show", as: :minimum_wage_inflation_calculator, defaults: { page: "minimum_wage" }
   get "costs/:item" => "cost_pages#index", as: :cost_item
   get "costs/:item/:year" => "cost_pages#show", as: :cost_page, constraints: { year: /\d{4}/ }
+  get "costs/:item/:year/:month" => "cost_pages#month", as: :cost_month_page, constraints: { year: /\d{4}/, month: /\d{2}/ }
 
   resource :calculation, only: [ :show ], controller: "calculations"
 

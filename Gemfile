@@ -4,6 +4,8 @@ source "https://rubygems.org"
 gem "rails", "~> 8.1.2"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
+# Ruby-native Tailwind CSS build (no Node required) [https://github.com/rails/tailwindcss-rails]
+gem "tailwindcss-rails"
 # Use sqlite3 as the database for Active Record
 gem "sqlite3", ">= 2.1"
 # Use the Puma web server [https://github.com/puma/puma]
@@ -55,6 +57,9 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+
+  # Run the Rails server and Tailwind watcher together via bin/dev [https://github.com/ddollar/foreman]
+  gem "foreman"
 end
 
 group :test do
