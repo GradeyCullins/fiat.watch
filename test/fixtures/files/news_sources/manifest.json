@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "description": "Sanitized parser contract samples. Live connectivity evidence is generated separately by news:verify_sources.",
+  "captured_at": "2026-07-11T01:01:33Z",
+  "sources": [
+    { "name": "bls", "endpoint": "https://www.bls.gov/feed/bls_latest.rss", "fixture": "bls.rss", "live_confirmed": true },
+    { "name": "federal_reserve", "endpoint": "https://www.federalreserve.gov/feeds/press_all.xml", "fixture": "federal_reserve.rss", "live_confirmed": true },
+    { "name": "ecb", "endpoint": "https://www.ecb.europa.eu/rss/press.html", "fixture": "ecb.rss", "live_confirmed": true },
+    { "name": "gdelt", "endpoint": "https://api.gdeltproject.org/api/v2/doc/doc", "fixture": "gdelt.json", "live_confirmed": false, "fixture_kind": "contract_sample" }
+  ]
+}

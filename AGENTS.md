@@ -17,6 +17,8 @@ Use the project binstubs so versions stay aligned.
 ## Coding Style & Naming Conventions
 Follow standard Rails conventions and the inherited `rubocop-rails-omakase` rules from `.rubocop.yml`. Use 2-space indentation in Ruby files. Keep class names CamelCase, filenames snake_case, and controller/view names aligned with routes and actions. Put non-trivial business logic in service objects such as `app/services/cpi_calculator.rb`, not in views.
 
+All service objects inherit from `ApplicationService`, expose `.call`, and return a `ServiceResult`. A successful result carries its payload in `value`; expected failures use the shared structured error object rather than raising. Domain-specific query helpers may remain public when useful.
+
 ## Testing Guidelines
 Write tests with Minitest. Name test files `*_test.rb` and mirror the application structure where practical. Prefer focused controller or service tests for behavior changes, and add regression coverage for bug fixes. Before opening a PR, run `bin/rails test`; for broader validation, run `bin/ci`.
 
