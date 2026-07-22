@@ -1,13 +1,12 @@
-import { Suspense } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { convert, formatUsd } from "@workspace/core"
 
 import { ItemArt } from "@/components/item-art"
-import { ItemDashboard, type DashboardPoint } from "@/components/item-dashboard"
+import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
-import { getAnnual, getCpiTable, getItem, getItems } from "@/lib/data"
+import { getAnnual, getCpiTable, getItem, getItems, getMonthlySeries } from "@/lib/data"
 import { itemStats } from "@/lib/item-stats"
 import { colorFor } from "@/lib/series"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
@@ -35,18 +34,28 @@ export default async function Page({ params }: { params: Promise<{ item: string 
   const [item, table, items] = await Promise.all([getItem(slug), getCpiTable(), getItems()])
   if (!item) notFound()
 
-  const rows = await getAnnual(slug)
+  const [rows, months] = await Promise.all([getAnnual(slug), getMonthlySeries(slug)])
   const baseYear = table.latestYear
   const color = colorFor(slug)
 
-  const points: DashboardPoint[] = rows.map((row) => ({
+  const deflate = (amount: number, year: number, month?: number) =>
+    table.has(year, month ?? null)
+      ? convert(table, { amount, from: { year, month }, to: { year: baseYear } }).converted
+      : null
+
+  const annual: ChartReading[] = rows.map((row) => ({
     year: row.year,
     nominal: row.value,
-    real: table.has(row.year)
-      ? convert(table, { amount: row.value, from: { year: row.year }, to: { year: baseYear } })
-          .converted
-      : null,
-    months: row.months,
+    real: deflate(row.value, row.year),
+  }))
+
+  // The same series at monthly resolution — a zoom level on this chart, not a
+  // different page. Each point is deflated with its own month's CPI.
+  const monthly: ChartReading[] = months.map((m) => ({
+    year: m.year,
+    month: m.month,
+    nominal: m.value,
+    real: deflate(m.value, m.year, m.month),
   }))
 
   const partial = new Set(item.partialYears)
@@ -84,34 +93,23 @@ export default async function Page({ params }: { params: Promise<{ item: string 
         </p>
       </div>
 
-      {/*
-        The fallback is the point, not a placeholder.
+      <StatRail>
+        {itemStats({ points: annual, unit: item.unit, baseYear }).map((stat) => (
+          <Stat key={stat.label} {...stat} />
+        ))}
+      </StatRail>
 
-        `ItemDashboard` reads the pinned year from the URL through nuqs, which
-        calls `useSearchParams` — and everything inside that Suspense boundary
-        is excluded from the prerendered HTML. A skeleton here meant the four
-        headline prices were absent from the static page entirely: `Latest
-        price` returned zero hits in the built HTML. Rendering the real figures
-        on the server puts them back, and paints them instantly for people too.
-      */}
-      <Suspense
-        fallback={
-          <StatRail>
-            {itemStats({ points, unit: item.unit, baseYear }).map((stat) => (
-              <Stat key={stat.label} {...stat} />
-            ))}
-          </StatRail>
-        }
-      >
-        <ItemDashboard
+      <div className="mt-3">
+        <ItemChart
           slug={slug}
           label={item.label}
           unit={item.unit}
           color={color}
           baseYear={baseYear}
-          points={points}
+          annual={annual}
+          monthly={monthly}
         />
-      </Suspense>
+      </div>
 
       {/*
         The year index. This used to be a 220-row table, which was unreadable —
@@ -129,7 +127,7 @@ export default async function Page({ params }: { params: Promise<{ item: string 
           </p>
         </div>
         <ul className="ruled grid grid-cols-2 gap-px border sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-          {[...points].reverse().map((point) => (
+          {[...rows].reverse().map((point) => (
             <li key={point.year} className="bg-border">
               <Link
                 href={`/costs/${slug}/${point.year}`}
@@ -145,7 +143,7 @@ export default async function Page({ params }: { params: Promise<{ item: string 
                   ) : null}
                 </span>
                 <span className="tnum font-mono text-sm font-semibold">
-                  {formatUsd(point.nominal)}
+                  {formatUsd(point.value)}
                 </span>
               </Link>
             </li>

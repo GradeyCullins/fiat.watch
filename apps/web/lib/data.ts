@@ -7,6 +7,7 @@ import {
   annualPrices,
   listItems,
   monthlyPrices,
+  monthlySeries,
   type AnnualPrice,
   type ItemSummary,
 } from "@workspace/db"
@@ -26,6 +27,8 @@ export const getAnnual = cache(annualPrices)
 export const getMonthly = cache(monthlyPrices)
 
 export const getPriceKeys = cache(allPriceKeys)
+
+export const getMonthlySeries = cache(monthlySeries)
 
 export const getItem = cache(async (slug: string) => {
   const found = (await getItems()).find((i) => i.slug === slug)

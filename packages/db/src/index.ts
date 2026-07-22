@@ -4,6 +4,7 @@ export {
   listItems,
   annualPrices,
   monthlyPrices,
+  monthlySeries,
   allPriceKeys,
   allCpi,
   latestCpiYear,

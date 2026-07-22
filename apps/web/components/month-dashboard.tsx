@@ -1,9 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
-import { parseAsInteger, parseAsStringLiteral, useQueryStates } from "nuqs"
-import { ArrowRightIcon } from "lucide-react"
 import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts"
 
 import { formatUsd } from "@workspace/core"
@@ -13,8 +10,6 @@ import {
   type ChartConfig,
 } from "@workspace/ui/components/chart"
 import { cn } from "@workspace/ui/lib/utils"
-
-import { ActiveLabelProbe } from "@/components/chart-active-label"
 
 export interface MonthPoint {
   month: number
@@ -26,15 +21,14 @@ export interface MonthPoint {
   real: number | null
 }
 
-const BASES = ["real", "nominal"] as const
-
 /**
  * The twelve months of one year, as bars rather than a line — twelve readings
- * are discrete observations, and a line between them implies a daily path that
- * was never measured.
+ * are discrete observations, and a line between them would imply a daily path
+ * nobody measured.
  *
- * Selecting a bar writes `?m=` (shallow), so a month is shareable without
- * minting a crawlable duplicate of `/costs/gas/1980/06`, which is the real page.
+ * Clicking a bar navigates to that month's page. An earlier version wrote
+ * `?m=6` instead, which was a second address for exactly what
+ * `/costs/gas/1980/06` already says.
  */
 export function MonthDashboard({
   slug,
@@ -51,19 +45,9 @@ export function MonthDashboard({
   baseYear: number
   points: MonthPoint[]
 }) {
-  const [{ m, v }, setState] = useQueryStates({
-    m: parseAsInteger,
-    v: parseAsStringLiteral(BASES).withDefault("real"),
-  })
+  const [basis, setBasis] = React.useState<"real" | "nominal">("real")
+  const key = basis
 
-  const key = v === "real" ? "real" : "nominal"
-  const selected = points.find((p) => p.month === m) ?? null
-
-  // See chart-active-label.tsx.
-  const hovered = React.useRef<string | null>(null)
-  const trackHover = React.useCallback((label: unknown) => {
-    hovered.current = typeof label === "string" ? label : null
-  }, [])
 
   const values = points.map((p) => p.nominal)
   const low = points[values.indexOf(Math.min(...values))]
@@ -80,18 +64,18 @@ export function MonthDashboard({
         <div className="ruled flex border">
           {(
             [
-              { value: "real", label: `${baseYear} dollars` },
+              { value: "real", label: `${baseYear} $` },
               { value: "nominal", label: "At the time" },
             ] as const
           ).map((option) => (
             <button
               key={option.value}
               type="button"
-              onClick={() => setState({ v: option.value })}
-              aria-pressed={v === option.value}
+              onClick={() => setBasis(option.value)}
+              aria-pressed={basis === option.value}
               className={cn(
                 "ruled border-r px-2.5 py-1 text-xs font-medium transition-colors last:border-r-0",
-                v === option.value
+                basis === option.value
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground",
               )}
@@ -100,31 +84,6 @@ export function MonthDashboard({
             </button>
           ))}
         </div>
-
-        <div className="ml-auto flex items-center gap-2 pr-1">
-          {selected ? (
-            <>
-              <button
-                type="button"
-                onClick={() => setState({ m: null })}
-                className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4"
-              >
-                Clear
-              </button>
-              <Link
-                href={`/costs/${slug}/${year}/${String(selected.month).padStart(2, "0")}`}
-                className="ruled bg-primary text-primary-foreground flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium"
-              >
-                Open {selected.name}
-                <ArrowRightIcon className="size-3" />
-              </Link>
-            </>
-          ) : (
-            <span className="text-muted-foreground hidden text-xs sm:block">
-              Click a bar to pin a month
-            </span>
-          )}
-        </div>
       </div>
 
       <ChartContainer
@@ -132,15 +91,10 @@ export function MonthDashboard({
         className="ruled bg-card aspect-auto h-64 w-full border p-2 sm:h-72 sm:p-4"
       >
         <BarChart
+          accessibilityLayer
           data={points}
           margin={{ left: 4, right: 12, top: 8, bottom: 0 }}
-          onClick={() => {
-            const hit = points.find((p) => p.short === hovered.current)
-            if (hit) setState({ m: hit.month === m ? null : hit.month })
-          }}
-          className="cursor-pointer"
         >
-          <ActiveLabelProbe onChange={trackHover} />
           <CartesianGrid vertical={false} strokeDasharray="2 4" />
           <XAxis dataKey="short" tickLine={false} axisLine={false} tickMargin={10} />
           <YAxis
@@ -175,11 +129,7 @@ export function MonthDashboard({
           />
           <Bar dataKey={key} isAnimationActive={false}>
             {points.map((point) => (
-              <Cell
-                key={point.month}
-                fill={color}
-                fillOpacity={selected && selected.month !== point.month ? 0.3 : 1}
-              />
+              <Cell key={point.month} fill={color} />
             ))}
           </Bar>
         </BarChart>

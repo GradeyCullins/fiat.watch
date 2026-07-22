@@ -103,6 +103,16 @@ export async function monthlyPrices(slug: string, year: number) {
     .orderBy(asc(prices.month));
 }
 
+/** Every monthly reading for one item, oldest first. ~600 rows for gas. */
+export async function monthlySeries(slug: string) {
+  const db = await getDb();
+  return db
+    .select({ year: prices.year, month: prices.month, value: prices.value })
+    .from(prices)
+    .where(eq(prices.itemSlug, slug))
+    .orderBy(asc(prices.year), asc(prices.month));
+}
+
 /**
  * Every (item, year, month) that actually has a reading — the exact set of
  * month pages that should exist. Absent months (October 2025) are simply not
