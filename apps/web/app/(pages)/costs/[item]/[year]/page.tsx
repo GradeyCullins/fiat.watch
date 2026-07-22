@@ -1,20 +1,14 @@
+import { Suspense } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 
 import { convert, formatUsd } from "@workspace/core"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { ItemArt } from "@/components/item-art"
-import { Crumbs, PageTitle, Section, Shell } from "@/components/page-shell"
-import { SeriesChart, type SeriesPoint } from "@/components/series-chart"
+import { MonthDashboard, type MonthPoint } from "@/components/month-dashboard"
+import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems, getMonthly } from "@/lib/data"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
@@ -87,6 +81,7 @@ export default async function Page({
 
   const previous = rows[index - 1]
   const next = rows[index + 1]
+  const yoy = previous ? (row.value / previous.value - 1) * 100 : null
 
   const related = await Promise.all(
     items
@@ -97,22 +92,21 @@ export default async function Page({
       })),
   )
 
-  const points: SeriesPoint[] = months.map((m) => ({
-    x: monthName(m.month).slice(0, 3),
+  const points: MonthPoint[] = months.map((m) => ({
+    month: m.month,
+    short: monthName(m.month).slice(0, 3),
+    name: monthName(m.month),
     nominal: m.value,
     // Month pages on the old site deflated a March price with the *annual*
     // index. With monthly CPI now stored, the right deflator is available.
-    adjusted: table.has(year, m.month)
-      ? convert(table, {
-          amount: m.value,
-          from: { year, month: m.month },
-          to: { year: baseYear },
-        }).converted
+    real: table.has(year, m.month)
+      ? convert(table, { amount: m.value, from: { year, month: m.month }, to: { year: baseYear } })
+          .converted
       : null,
   }))
 
   return (
-    <Shell>
+    <Shell wide className="py-6 sm:py-8">
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
@@ -121,162 +115,150 @@ export default async function Page({
         ]}
       />
 
-      <div className="mb-8 flex items-start gap-4">
-        <ItemArt slug={slug} className="size-12 shrink-0 sm:size-16" style={{ color }} />
-        <PageTitle eyebrow={`${item.unit} · BLS average price`}>
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <ItemArt slug={slug} className="size-9 shrink-0" style={{ color }} />
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
           How much did {item.label} cost in {year}?
-        </PageTitle>
+        </h1>
+        <p className="text-muted-foreground text-eyebrow w-full uppercase sm:w-auto">
+          {item.unit} · BLS average price
+        </p>
       </div>
 
-      <div className="ruled bg-card brutal-6 grid border-2 sm:grid-cols-2">
-        <Figure label={`Price in ${year}`} value={formatUsd(row.value)} note={item.unit} />
-        <Figure
+      <StatRail>
+        <Stat label={`Price in ${year}`} value={formatUsd(row.value)} note={item.unit} />
+        <Stat
           label={`In ${baseYear} dollars`}
           value={adjusted == null ? "—" : formatUsd(adjusted)}
           note={
             adjusted == null
               ? "No CPI reading for this year"
-              : `${((adjusted / row.value - 1) * 100).toFixed(0)}% more than the price of the day`
+              : `${((adjusted / row.value - 1) * 100).toFixed(0)}% above the price of the day`
           }
-          className="ruled border-t-2 sm:border-t-0 sm:border-l-2"
         />
-      </div>
+        <Stat
+          label="Year on year"
+          value={yoy == null ? "—" : `${yoy >= 0 ? "+" : ""}${yoy.toFixed(1)}%`}
+          tone={yoy == null ? undefined : yoy >= 0 ? "up" : "down"}
+          note={previous ? `vs ${formatUsd(previous.value)} in ${previous.year}` : "First year"}
+        />
+        <Stat
+          label="Coverage"
+          value={`${row.months}/12`}
+          note={row.months === 12 ? "Full year published" : "BLS published a partial year"}
+        />
+      </StatRail>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
+      <nav className="mt-3 flex items-center justify-between gap-3">
         {previous ? (
-          <NeighbourLink href={`/costs/${slug}/${previous.year}`} direction="back">
+          <Neighbour href={`/costs/${slug}/${previous.year}`} back>
             {previous.year} · {formatUsd(previous.value)}
-          </NeighbourLink>
+          </Neighbour>
         ) : (
           <span />
         )}
+        <Link
+          href={`/costs/${slug}`}
+          className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4"
+        >
+          All years
+        </Link>
         {next ? (
-          <NeighbourLink href={`/costs/${slug}/${next.year}`} direction="forward">
+          <Neighbour href={`/costs/${slug}/${next.year}`}>
             {next.year} · {formatUsd(next.value)}
-          </NeighbourLink>
+          </Neighbour>
         ) : (
           <span />
         )}
-      </div>
+      </nav>
 
       {points.length ? (
-        <Section title={`Month by month in ${year}`}>
-          <SeriesChart
-            points={points}
-            label={item.label}
-            unit={item.unit}
-            color={color}
-            baseYear={baseYear}
-          />
+        <section className="mt-8">
+          <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+            Month by month in {year}
+          </h2>
+          <Suspense fallback={<Skeleton className="h-72 w-full" />}>
+            <MonthDashboard
+              slug={slug}
+              year={year}
+              unit={item.unit}
+              color={color}
+              baseYear={baseYear}
+              points={points}
+            />
+          </Suspense>
 
-          <div className="ruled mt-4 overflow-x-auto border-2">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Month</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
-                  <TableHead className="text-right">In {baseYear} dollars</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {months.map((m, i) => (
-                  <TableRow key={m.month}>
-                    <TableCell>
-                      <Link
-                        href={`/costs/${slug}/${year}/${String(m.month).padStart(2, "0")}`}
-                        className="font-bold underline-offset-4 hover:underline"
-                      >
-                        {monthName(m.month)}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="tnum text-right font-mono">
-                      {formatUsd(m.value)}
-                    </TableCell>
-                    <TableCell className="tnum text-muted-foreground text-right font-mono">
-                      {points[i]?.adjusted == null ? "—" : formatUsd(points[i]!.adjusted!)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          {months.length < 12 ? (
-            <p className="text-muted-foreground mt-3 text-xs">
-              BLS published {months.length} of 12 months for {year}. The annual figure above is the
-              mean of those {months.length}.
-            </p>
-          ) : null}
-        </Section>
+          <ul className="ruled mt-3 grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
+            {points.map((point) => (
+              <li key={point.month} className="bg-border">
+                <Link
+                  href={`/costs/${slug}/${year}/${String(point.month).padStart(2, "0")}`}
+                  className="bg-card hover:bg-accent flex h-full flex-col gap-1 px-2.5 py-2 transition-colors"
+                >
+                  <span className="text-muted-foreground text-xs">{point.short}</span>
+                  <span className="tnum font-mono text-sm font-semibold">
+                    {formatUsd(point.nominal)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
-      <Section title={`Everything else in ${year}`}>
-        <ul className="ruled grid border-2 sm:grid-cols-2">
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+          Everything else in {year}
+        </h2>
+        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
           {related.map(({ other, value }) => (
-            <li key={other.slug} className="ruled border-b-2 last:border-b-0 sm:even:border-l-2">
+            <li key={other.slug} className="bg-border">
               {value == null ? (
-                <span className="text-muted-foreground flex items-center gap-3 p-4 text-sm">
-                  <ItemArt slug={other.slug} className="size-6 opacity-40" />
-                  {other.label} — no data for {year}
+                <span className="bg-card text-muted-foreground flex h-full items-center gap-2.5 px-3 py-2.5 text-sm">
+                  <ItemArt slug={other.slug} className="size-5 opacity-40" />
+                  {other.label} — no data
                 </span>
               ) : (
                 <Link
                   href={`/costs/${other.slug}/${year}`}
-                  className="hover:bg-accent flex items-center gap-3 p-4 transition-colors"
+                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
                   <ItemArt
                     slug={other.slug}
-                    className="size-6"
+                    className="size-5"
                     style={{ color: colorFor(other.slug) }}
                   />
-                  <span className="font-display font-bold">{other.label}</span>
-                  <span className="tnum ml-auto font-mono">{formatUsd(value)}</span>
+                  <span className="text-sm font-medium">{other.label}</span>
+                  <span className="tnum ml-auto font-mono text-sm font-semibold">
+                    {formatUsd(value)}
+                  </span>
                 </Link>
               )}
             </li>
           ))}
         </ul>
-      </Section>
+      </section>
     </Shell>
   )
 }
 
-function Figure({
-  label,
-  value,
-  note,
-  className,
-}: {
-  label: string
-  value: string
-  note?: string
-  className?: string
-}) {
-  return (
-    <div className={className ? `p-5 sm:p-7 ${className}` : "p-5 sm:p-7"}>
-      <p className="text-eyebrow text-muted-foreground uppercase">{label}</p>
-      <p className="font-display tnum text-figure mt-2">{value}</p>
-      {note ? <p className="text-muted-foreground mt-2 text-sm">{note}</p> : null}
-    </div>
-  )
-}
-
-function NeighbourLink({
+function Neighbour({
   href,
-  direction,
+  back,
   children,
 }: {
   href: string
-  direction: "back" | "forward"
+  back?: boolean
   children: React.ReactNode
 }) {
   return (
     <Link
       href={href}
-      className="ruled hover:bg-accent tnum flex items-center gap-2 border-2 px-3 py-1.5 font-mono text-sm transition-colors"
+      className="ruled hover:bg-accent tnum flex items-center gap-1.5 border px-2.5 py-1 font-mono text-xs transition-colors"
     >
-      {direction === "back" ? <ArrowLeftIcon className="size-3.5" /> : null}
+      {back ? <ArrowLeftIcon className="size-3" /> : null}
       {children}
-      {direction === "forward" ? <ArrowRightIcon className="size-3.5" /> : null}
+      {back ? null : <ArrowRightIcon className="size-3" />}
     </Link>
   )
 }

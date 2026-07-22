@@ -1,19 +1,13 @@
+import { Suspense } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { convert, formatUsd } from "@workspace/core"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@workspace/ui/components/table"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { ItemArt } from "@/components/item-art"
-import { Crumbs, PageTitle, Section, Shell } from "@/components/page-shell"
-import { SeriesChart, type SeriesPoint } from "@/components/series-chart"
+import { ItemDashboard, type DashboardPoint } from "@/components/item-dashboard"
+import { Crumbs, Shell } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems } from "@/lib/data"
 import { colorFor } from "@/lib/series"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
@@ -31,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ item: str
 
   return pageMetadata({
     title: `Historical ${item.labelAttributive} prices by year`,
-    description: `Browse BLS average ${item.label} prices from ${item.firstYear} to ${item.lastYear}, ${item.unit}, alongside the inflation-adjusted value in ${table.latestYear} dollars.`,
+    description: `BLS average ${item.label} prices from ${item.firstYear} to ${item.lastYear}, ${item.unit}, with every year restated in ${table.latestYear} dollars.`,
     path: `/costs/${item.slug}`,
   })
 }
@@ -45,26 +39,20 @@ export default async function Page({ params }: { params: Promise<{ item: string 
   const baseYear = table.latestYear
   const color = colorFor(slug)
 
-  const enriched = rows.map((row) => ({
-    ...row,
-    adjusted: table.has(row.year)
+  const points: DashboardPoint[] = rows.map((row) => ({
+    year: row.year,
+    nominal: row.value,
+    real: table.has(row.year)
       ? convert(table, { amount: row.value, from: { year: row.year }, to: { year: baseYear } })
           .converted
       : null,
+    months: row.months,
   }))
 
-  const points: SeriesPoint[] = enriched.map((row) => ({
-    x: row.year,
-    nominal: row.value,
-    adjusted: row.adjusted,
-  }))
-
-  const first = enriched[0]!
-  const last = enriched.at(-1)!
-  const realChange = first.adjusted ? (last.value / first.adjusted - 1) * 100 : null
+  const partial = new Set(item.partialYears)
 
   return (
-    <Shell>
+    <Shell wide className="py-6 sm:py-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={jsonLd({
@@ -86,108 +74,98 @@ export default async function Page({ params }: { params: Promise<{ item: string 
         ]}
       />
 
-      <div className="mb-8 flex items-start gap-4">
-        <ItemArt slug={slug} className="size-12 shrink-0 sm:size-16" style={{ color }} />
-        <PageTitle
-          eyebrow={`${item.observations} monthly readings · ${item.firstYear}–${item.lastYear}`}
-          lede={
-            realChange == null ? null : (
-              <>
-                {item.label} cost {formatUsd(first.value)} {item.unit} in {first.year} — about{" "}
-                <strong className="text-foreground font-mono tnum">
-                  {formatUsd(first.adjusted!)}
-                </strong>{" "}
-                in {baseYear} money. It costs {formatUsd(last.value)} today, so in real terms it is{" "}
-                <strong className="text-foreground">
-                  {realChange >= 0 ? "up" : "down"} {Math.abs(realChange).toFixed(0)}%
-                </strong>{" "}
-                over {last.year - first.year} years.
-              </>
-            )
-          }
-        >
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <ItemArt slug={slug} className="size-9 shrink-0" style={{ color }} />
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
           Historical {item.labelAttributive} prices by year
-        </PageTitle>
+        </h1>
+        <p className="text-muted-foreground text-eyebrow w-full uppercase sm:w-auto">
+          {item.unit} · {item.firstYear}–{item.lastYear} · {item.observations} monthly readings
+        </p>
       </div>
 
-      <SeriesChart
-        points={points}
-        label={item.label}
-        unit={item.unit}
-        color={color}
-        baseYear={baseYear}
-      />
+      <Suspense fallback={<Skeleton className="h-[36rem] w-full" />}>
+        <ItemDashboard
+          slug={slug}
+          label={item.label}
+          unit={item.unit}
+          color={color}
+          baseYear={baseYear}
+          points={points}
+        />
+      </Suspense>
 
-      <Section title={`Every year, ${item.firstYear}–${item.lastYear}`}>
-        <div className="ruled overflow-x-auto border-2">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Year</TableHead>
-                <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">In {baseYear} dollars</TableHead>
-                <TableHead className="text-right">Months</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[...enriched].reverse().map((row) => (
-                <TableRow key={row.year}>
-                  <TableCell>
-                    <Link
-                      href={`/costs/${slug}/${row.year}`}
-                      className="tnum font-mono font-bold underline-offset-4 hover:underline"
-                    >
-                      {row.year}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="tnum text-right font-mono">
-                    {formatUsd(row.value)}
-                  </TableCell>
-                  <TableCell className="tnum text-muted-foreground text-right font-mono">
-                    {row.adjusted == null ? "—" : formatUsd(row.adjusted)}
-                  </TableCell>
-                  <TableCell className="tnum text-muted-foreground text-right font-mono text-xs">
-                    {row.months === 12 ? "12" : `${row.months} of 12`}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+      {/*
+        The year index. This used to be a 220-row table, which was unreadable —
+        but it is also the only crawl path to the 220 year pages, so it cannot
+        simply be deleted. Dense chips do the same linking in a tenth of the
+        height, and the price is on the chip rather than in a column.
+      */}
+      <section className="mt-8">
+        <div className="mb-3 flex items-baseline justify-between gap-4">
+          <h2 className="font-display text-lg font-bold tracking-tight">
+            Every year, {item.firstYear}–{item.lastYear}
+          </h2>
+          <p className="text-muted-foreground text-xs">
+            {rows.length} pages · each one has its own months
+          </p>
         </div>
+        <ul className="ruled grid grid-cols-2 gap-px border sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
+          {[...points].reverse().map((point) => (
+            <li key={point.year} className="bg-border">
+              <Link
+                href={`/costs/${slug}/${point.year}`}
+                className="bg-card hover:bg-accent flex h-full flex-col gap-1 px-3 py-2 transition-colors"
+              >
+                <span className="tnum text-muted-foreground flex items-center gap-1.5 font-mono text-xs">
+                  {point.year}
+                  {partial.has(point.year) ? (
+                    <span
+                      title={`${point.months} of 12 months published`}
+                      className="bg-muted-foreground/50 size-1.5 rounded-full"
+                    />
+                  ) : null}
+                </span>
+                <span className="tnum font-mono text-sm font-semibold">
+                  {formatUsd(point.nominal)}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
         {item.partialYears.length ? (
-          <p className="text-muted-foreground mt-3 text-xs">
-            {item.partialYears.join(", ")} {item.partialYears.length === 1 ? "is" : "are"} an
-            average over fewer than twelve months — BLS did not publish a full year.
+          <p className="text-muted-foreground mt-2 text-xs">
+            Dotted years are an average over fewer than twelve months — BLS did not publish a full
+            year.
           </p>
         ) : null}
-      </Section>
+      </section>
 
-      <Section title="Other prices">
-        <ul className="ruled grid border-2 sm:grid-cols-2">
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">Other prices</h2>
+        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
           {items
             .filter((other) => other.slug !== slug)
             .map((other) => (
-              <li key={other.slug} className="ruled border-b-2 last:border-b-0 sm:even:border-l-2">
+              <li key={other.slug} className="bg-border">
                 <Link
                   href={`/costs/${other.slug}`}
-                  className="hover:bg-accent flex items-center gap-3 p-4 transition-colors"
+                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
                   <ItemArt
                     slug={other.slug}
-                    className="size-6"
+                    className="size-5"
                     style={{ color: colorFor(other.slug) }}
                   />
-                  <span className="font-display font-bold">
-                    Historical {other.labelAttributive} prices
-                  </span>
-                  <span className="text-muted-foreground tnum ml-auto text-xs">
+                  <span className="text-sm font-medium">{other.label}</span>
+                  <span className="text-muted-foreground tnum ml-auto font-mono text-xs">
                     {other.firstYear}–{other.lastYear}
                   </span>
                 </Link>
               </li>
             ))}
         </ul>
-      </Section>
+      </section>
     </Shell>
   )
 }

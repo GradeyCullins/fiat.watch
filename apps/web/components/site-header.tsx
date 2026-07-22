@@ -6,6 +6,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 import {
@@ -18,21 +19,24 @@ import {
 } from "@workspace/ui/components/sheet"
 
 import { ItemArt } from "@/components/item-art"
+import { PriceTicker } from "@/components/price-ticker"
 import { SiteSearch } from "@/components/site-search"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { CALCULATORS } from "@/lib/calculators"
 import { getItems } from "@/lib/data"
-import { colorFor } from "@/lib/series"
 import { buildSearchIndex } from "@/lib/search"
+import { colorFor } from "@/lib/series"
 
 function Wordmark() {
   return (
     <Link
       href="/"
-      className="group flex shrink-0 items-baseline gap-1.5 font-display text-lg leading-none font-extrabold tracking-tight"
+      className="flex shrink-0 items-center gap-2 font-display text-base leading-none font-extrabold tracking-tight"
     >
-      <span className="bg-primary text-primary-foreground ruled border-2 px-1.5 py-1">FIAT</span>
-      <span className="hidden sm:inline">WATCH</span>
+      <span className="bg-primary text-primary-foreground grid size-7 place-items-center text-sm">
+        $
+      </span>
+      <span className="hidden sm:inline">FIAT WATCH</span>
     </Link>
   )
 }
@@ -40,116 +44,103 @@ function Wordmark() {
 export async function SiteHeader() {
   const [items, index] = await Promise.all([getItems(), buildSearchIndex()])
 
-  const priceLinks = items.map((item) => ({
-    href: `/costs/${item.slug}`,
-    label: item.label,
-    slug: item.slug,
-    hint: `${item.firstYear}–${item.lastYear}`,
-  }))
-
   return (
-    <header className="bg-background/85 ruled sticky top-0 z-40 border-b-2 backdrop-blur">
-      <div className="mx-auto flex h-16 w-full max-w-[1800px] items-center gap-3 px-4 sm:gap-4 sm:px-6 xl:px-10">
+    <header className="bg-background/90 ruled sticky top-0 z-40 border-b backdrop-blur">
+      <div className="mx-auto flex h-14 w-full max-w-[1800px] items-center gap-2 px-4 sm:px-6 xl:px-10">
         <Wordmark />
 
-        {/* `min-w-0`: without it the flex item refuses to shrink below its
-            content and pushes the trailing buttons off a phone screen. */}
-        <div className="min-w-0 flex-1 sm:px-4 lg:max-w-2xl">
-          <SiteSearch index={index} />
-        </div>
-
-        <nav className="hidden items-center gap-1 lg:flex">
-          <Button
-            variant="ghost"
-            className="font-medium"
-            nativeButton={false}
-            render={<Link href="/calculator" />}
-          >
-            Calculator
-          </Button>
-
+        {/*
+          Two menus, not three. There used to be a standalone "Calculator" link
+          beside a "Calculators" dropdown, which asked the visitor to work out
+          the difference between them. The general CPI tool is a calculator, so
+          it is the first item in the menu with the other seven.
+        */}
+        <nav className="ml-2 hidden items-center lg:flex">
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" className="font-medium" />}>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="sm" className="font-medium" />}
+            >
               Calculators
               <ChevronDownIcon className="size-3.5 opacity-60" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="ruled w-auto min-w-64 rounded-none border-2"
-            >
+            <DropdownMenuContent align="start" className="ruled w-auto min-w-64 border">
+              <DropdownMenuItem render={<Link href="/calculator" />}>
+                Inflation calculator
+                <span className="text-muted-foreground ml-auto text-xs">Any amount</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {CALCULATORS.map((c) => (
                 <DropdownMenuItem key={c.slug} render={<Link href={c.path} />}>
-                  {c.heading}
+                  {c.heading.replace(" inflation calculator", "")}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" className="font-medium" />}>
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" size="sm" className="font-medium" />}
+            >
               Prices
               <ChevronDownIcon className="size-3.5 opacity-60" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="ruled w-auto min-w-64 rounded-none border-2"
-            >
-              {priceLinks.map((link) => (
-                <DropdownMenuItem key={link.slug} render={<Link href={link.href} />}>
+            <DropdownMenuContent align="start" className="ruled w-auto min-w-64 border">
+              {items.map((item) => (
+                <DropdownMenuItem key={item.slug} render={<Link href={`/costs/${item.slug}`} />}>
                   <ItemArt
-                    slug={link.slug}
+                    slug={item.slug}
                     className="size-4"
-                    style={{ color: colorFor(link.slug) }}
+                    style={{ color: colorFor(item.slug) }}
                   />
-                  {link.label}
-                  <span className="text-muted-foreground tnum ml-auto text-xs">{link.hint}</span>
+                  {item.label}
+                  <span className="text-muted-foreground tnum ml-auto text-xs">
+                    {item.firstYear}–{item.lastYear}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
 
+        {/* `min-w-0`: without it the flex item refuses to shrink below its
+            content and pushes the trailing buttons off a phone screen. */}
+        <div className="ml-auto min-w-0 flex-1 lg:max-w-md xl:max-w-lg">
+          <SiteSearch index={index} />
+        </div>
+
         <ThemeToggle />
 
         <Sheet>
           <SheetTrigger
             render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ruled border-2 lg:hidden"
-                aria-label="Menu"
-              />
+              <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Menu" />
             }
           >
             <MenuIcon className="size-4" />
           </SheetTrigger>
-          <SheetContent side="right" className="ruled w-80 border-l-2">
+          <SheetContent side="right" className="ruled w-80 border-l">
             <SheetHeader>
-              <SheetTitle className="font-display text-2xl">Fiat Watch</SheetTitle>
+              <SheetTitle className="font-display text-xl">Fiat Watch</SheetTitle>
               <SheetDescription>What your money was really worth.</SheetDescription>
             </SheetHeader>
             <nav className="flex flex-col gap-6 overflow-y-auto px-4 pb-8">
-              <MobileGroup title="Tools">
-                <MobileLink href="/">Compare prices</MobileLink>
-                <MobileLink href="/calculator">Inflation calculator</MobileLink>
-              </MobileGroup>
               <MobileGroup title="Calculators">
+                <MobileLink href="/calculator">Inflation calculator</MobileLink>
                 {CALCULATORS.map((c) => (
                   <MobileLink key={c.slug} href={c.path}>
-                    {c.heading}
+                    {c.heading.replace(" inflation calculator", "")}
                   </MobileLink>
                 ))}
               </MobileGroup>
               <MobileGroup title="Prices">
-                {priceLinks.map((link) => (
-                  <MobileLink key={link.slug} href={link.href}>
+                {items.map((item) => (
+                  <MobileLink key={item.slug} href={`/costs/${item.slug}`}>
                     <ItemArt
-                      slug={link.slug}
+                      slug={item.slug}
                       className="size-4"
-                      style={{ color: colorFor(link.slug) }}
+                      style={{ color: colorFor(item.slug) }}
                     />
-                    {link.label}
+                    {item.label}
                   </MobileLink>
                 ))}
               </MobileGroup>
@@ -157,6 +148,8 @@ export async function SiteHeader() {
           </SheetContent>
         </Sheet>
       </div>
+
+      <PriceTicker />
     </header>
   )
 }

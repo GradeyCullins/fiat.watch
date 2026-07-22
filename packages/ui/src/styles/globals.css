@@ -63,6 +63,8 @@
     --color-chart-3: var(--chart-3);
     --color-chart-2: var(--chart-2);
     --color-chart-1: var(--chart-1);
+    --color-up: var(--up);
+    --color-down: var(--down);
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
@@ -95,95 +97,103 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Palette — "cooked fiat".
+   Palette — terminal green.
 
-   Warm bone paper against ink, with an acid-lime primary and five clashing
-   chart hues. Chroma is deliberately non-zero on the neutrals: the greys are
-   warm, so nothing on the page is a dead sRGB grey.
+   The chrome is a trading terminal: near-black blue-grey panels, hairline
+   rules, everything dense. The accent is greenback green. Gains and losses get
+   their own semantic tokens (`--up` / `--down`) rather than reusing primary,
+   because a chart that is green when it means "brand" and green when it means
+   "up" is a chart that says nothing.
    --------------------------------------------------------------------------- */
 :root {
-    --background: oklch(0.968 0.014 92);
-    --foreground: oklch(0.185 0.018 58);
-    --card: oklch(0.993 0.007 95);
-    --card-foreground: oklch(0.185 0.018 58);
-    --popover: oklch(0.993 0.007 95);
-    --popover-foreground: oklch(0.185 0.018 58);
+    --background: oklch(0.975 0.008 155);
+    --foreground: oklch(0.205 0.022 168);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.205 0.022 168);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.205 0.022 168);
 
-    --primary: oklch(0.845 0.185 104);
-    --primary-foreground: oklch(0.185 0.018 58);
-    --secondary: oklch(0.925 0.018 92);
-    --secondary-foreground: oklch(0.185 0.018 58);
-    --muted: oklch(0.928 0.016 92);
-    --muted-foreground: oklch(0.455 0.022 72);
-    --accent: oklch(0.916 0.036 100);
-    --accent-foreground: oklch(0.185 0.018 58);
-    --destructive: oklch(0.552 0.232 27);
+    --primary: oklch(0.545 0.132 158);
+    --primary-foreground: oklch(0.985 0.008 150);
+    --secondary: oklch(0.945 0.012 155);
+    --secondary-foreground: oklch(0.205 0.022 168);
+    --muted: oklch(0.948 0.01 155);
+    --muted-foreground: oklch(0.492 0.021 162);
+    --accent: oklch(0.935 0.024 158);
+    --accent-foreground: oklch(0.235 0.038 162);
+    --destructive: oklch(0.575 0.212 25);
 
     /* `border` is what CartesianGrid and every component hairline uses, so it
-       stays quiet. `rule` is the structural near-black used for the brutal
-       panel edges we draw ourselves. */
-    --border: oklch(0.845 0.018 85);
-    --rule: oklch(0.185 0.018 58);
-    --input: oklch(0.72 0.02 82);
-    --ring: oklch(0.62 0.235 27);
-    --brutal: oklch(0.185 0.018 58);
+       stays quiet. `rule` is the structural edge we draw ourselves. */
+    --border: oklch(0.882 0.012 158);
+    --rule: oklch(0.205 0.022 168);
+    --input: oklch(0.815 0.014 158);
+    --ring: oklch(0.545 0.132 158);
+    --brutal: oklch(0.205 0.022 168);
 
-    --chart-1: oklch(0.635 0.238 28);
-    --chart-2: oklch(0.79 0.172 78);
-    --chart-3: oklch(0.665 0.168 152);
-    --chart-4: oklch(0.535 0.216 276);
-    --chart-5: oklch(0.635 0.248 342);
+    /* Direction. Never swapped, never themed away. */
+    --up: oklch(0.545 0.135 160);
+    --down: oklch(0.555 0.205 25);
+
+    --chart-1: oklch(0.545 0.135 160);
+    --chart-2: oklch(0.665 0.148 78);
+    --chart-3: oklch(0.545 0.108 232);
+    --chart-4: oklch(0.505 0.158 292);
+    --chart-5: oklch(0.575 0.192 22);
 
     --radius: 0rem;
 
-    --sidebar: oklch(0.945 0.016 92);
-    --sidebar-foreground: oklch(0.185 0.018 58);
-    --sidebar-primary: oklch(0.845 0.185 104);
-    --sidebar-primary-foreground: oklch(0.185 0.018 58);
-    --sidebar-accent: oklch(0.916 0.036 100);
-    --sidebar-accent-foreground: oklch(0.185 0.018 58);
-    --sidebar-border: oklch(0.845 0.018 85);
-    --sidebar-ring: oklch(0.62 0.235 27);
+    --sidebar: oklch(0.958 0.01 155);
+    --sidebar-foreground: oklch(0.205 0.022 168);
+    --sidebar-primary: oklch(0.545 0.132 158);
+    --sidebar-primary-foreground: oklch(0.985 0.008 150);
+    --sidebar-accent: oklch(0.935 0.024 158);
+    --sidebar-accent-foreground: oklch(0.235 0.038 162);
+    --sidebar-border: oklch(0.882 0.012 158);
+    --sidebar-ring: oklch(0.545 0.132 158);
 }
 
 .dark {
-    --background: oklch(0.172 0.012 78);
-    --foreground: oklch(0.948 0.012 92);
-    --card: oklch(0.212 0.014 78);
-    --card-foreground: oklch(0.948 0.012 92);
-    --popover: oklch(0.212 0.014 78);
-    --popover-foreground: oklch(0.948 0.012 92);
+    --background: oklch(0.192 0.017 258);
+    --foreground: oklch(0.932 0.006 250);
+    --card: oklch(0.232 0.016 258);
+    --card-foreground: oklch(0.932 0.006 250);
+    --popover: oklch(0.232 0.016 258);
+    --popover-foreground: oklch(0.932 0.006 250);
 
-    --primary: oklch(0.862 0.19 104);
-    --primary-foreground: oklch(0.172 0.012 78);
-    --secondary: oklch(0.272 0.016 78);
-    --secondary-foreground: oklch(0.948 0.012 92);
-    --muted: oklch(0.272 0.016 78);
-    --muted-foreground: oklch(0.708 0.018 85);
-    --accent: oklch(0.305 0.022 92);
-    --accent-foreground: oklch(0.948 0.012 92);
-    --destructive: oklch(0.688 0.202 25);
+    --primary: oklch(0.735 0.148 160);
+    --primary-foreground: oklch(0.172 0.018 258);
+    --secondary: oklch(0.288 0.015 258);
+    --secondary-foreground: oklch(0.932 0.006 250);
+    --muted: oklch(0.288 0.015 258);
+    --muted-foreground: oklch(0.678 0.013 254);
+    --accent: oklch(0.318 0.024 210);
+    --accent-foreground: oklch(0.952 0.006 250);
+    --destructive: oklch(0.672 0.198 24);
 
-    --border: oklch(0.335 0.016 80);
-    --rule: oklch(0.948 0.012 92);
-    --input: oklch(0.435 0.018 80);
-    --ring: oklch(0.862 0.19 104);
-    --brutal: oklch(0.08 0.01 78);
+    --border: oklch(0.328 0.014 258);
+    --rule: oklch(0.492 0.018 258);
+    --input: oklch(0.408 0.016 258);
+    --ring: oklch(0.735 0.148 160);
+    --brutal: oklch(0.128 0.014 258);
 
-    --chart-1: oklch(0.7 0.212 28);
-    --chart-2: oklch(0.845 0.166 82);
-    --chart-3: oklch(0.752 0.168 152);
-    --chart-4: oklch(0.652 0.196 276);
-    --chart-5: oklch(0.712 0.222 342);
+    --up: oklch(0.735 0.148 160);
+    --down: oklch(0.672 0.198 24);
 
-    --sidebar: oklch(0.212 0.014 78);
-    --sidebar-foreground: oklch(0.948 0.012 92);
-    --sidebar-primary: oklch(0.862 0.19 104);
-    --sidebar-primary-foreground: oklch(0.172 0.012 78);
-    --sidebar-accent: oklch(0.305 0.022 92);
-    --sidebar-accent-foreground: oklch(0.948 0.012 92);
-    --sidebar-border: oklch(0.335 0.016 80);
-    --sidebar-ring: oklch(0.862 0.19 104);
+    --chart-1: oklch(0.735 0.148 160);
+    --chart-2: oklch(0.795 0.152 82);
+    --chart-3: oklch(0.712 0.118 232);
+    --chart-4: oklch(0.688 0.152 292);
+    --chart-5: oklch(0.685 0.185 22);
+
+    --sidebar: oklch(0.232 0.016 258);
+    --sidebar-foreground: oklch(0.932 0.006 250);
+    --sidebar-primary: oklch(0.735 0.148 160);
+    --sidebar-primary-foreground: oklch(0.172 0.018 258);
+    --sidebar-accent: oklch(0.318 0.024 210);
+    --sidebar-accent-foreground: oklch(0.952 0.006 250);
+    --sidebar-border: oklch(0.328 0.014 258);
+    --sidebar-ring: oklch(0.735 0.148 160);
 }
 
 /* ---------------------------------------------------------------------------
@@ -242,6 +252,14 @@
     :focus-visible {
         outline: 2px solid var(--ring);
         outline-offset: 2px;
+    }
+
+    /* Chrome treats a focusable <svg> as keyboard-focused even when it was
+       clicked, so the chart surface drew a ring around the whole plot on every
+       click. Recharts already shows focus through its own cursor, active dot
+       and tooltip, which is a better indicator than a box round everything. */
+    .recharts-surface:focus-visible {
+        outline: none;
     }
 
     ::selection {

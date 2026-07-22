@@ -5,7 +5,7 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 import { convert, formatUsd } from "@workspace/core"
 
 import { ItemArt } from "@/components/item-art"
-import { Crumbs, PageTitle, Section, Shell } from "@/components/page-shell"
+import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getCpiTable, getItem, getItems, getMonthly, getPriceKeys } from "@/lib/data"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
@@ -34,10 +34,11 @@ async function load(slug: string, yearParam: string, monthParam: string) {
   const index = own.findIndex((k) => k.year === year && k.month === month)
   if (index === -1) return null
 
-  const value = (await getMonthly(slug, year)).find((m) => m.month === month)?.value
+  const inYear = await getMonthly(slug, year)
+  const value = inYear.find((m) => m.month === month)?.value
   if (value === undefined) return null
 
-  return { item, year, month, value, previous: own[index - 1], next: own[index + 1] }
+  return { item, year, month, value, inYear, previous: own[index - 1], next: own[index + 1] }
 }
 
 export async function generateMetadata({
@@ -67,16 +68,9 @@ export default async function Page({
   const data = await load(slug, yearParam, monthParam)
   if (!data) notFound()
 
-  const { item, year, month, value, previous, next } = data
+  const { item, year, month, value, inYear, previous, next } = data
   const [table, items, keys] = await Promise.all([getCpiTable(), getItems(), getPriceKeys()])
 
-  // Only link to sibling months that actually exist — with `dynamicParams`
-  // off, a link to a missing reading is a link to a 404.
-  const siblings = items.filter(
-    (other) =>
-      other.slug !== slug &&
-      keys.some((k) => k.slug === other.slug && k.year === year && k.month === month),
-  )
   const baseYear = table.latestYear
   const color = colorFor(slug)
   const period = `${monthName(month)} ${year}`
@@ -90,8 +84,25 @@ export default async function Page({
       ? convert(table, { amount: value, from: { year }, to: { year: baseYear } }).converted
       : null
 
+  const yearMean = inYear.reduce((sum, m) => sum + m.value, 0) / inYear.length
+  const vsYear = (value / yearMean - 1) * 100
+  const priorMonth = previous?.year === year || previous ? previous : undefined
+  const priorValue =
+    priorMonth && priorMonth.year === year
+      ? inYear.find((m) => m.month === priorMonth.month)?.value
+      : undefined
+  const mom = priorValue ? (value / priorValue - 1) * 100 : null
+
+  // Only link to sibling months that actually exist — with `dynamicParams`
+  // off, a link to a missing reading is a link to a 404.
+  const siblings = items.filter(
+    (other) =>
+      other.slug !== slug &&
+      keys.some((k) => k.slug === other.slug && k.year === year && k.month === month),
+  )
+
   return (
-    <Shell>
+    <Shell wide className="py-6 sm:py-8">
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
@@ -101,88 +112,135 @@ export default async function Page({
         ]}
       />
 
-      <div className="mb-8 flex items-start gap-4">
-        <ItemArt slug={slug} className="size-12 shrink-0 sm:size-16" style={{ color }} />
-        <PageTitle eyebrow={`${item.unit} · BLS average price`}>
+      <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+        <ItemArt slug={slug} className="size-9 shrink-0" style={{ color }} />
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
           How much did {item.label} cost in {period}?
-        </PageTitle>
+        </h1>
+        <p className="text-muted-foreground text-eyebrow w-full uppercase sm:w-auto">
+          {item.unit} · BLS average price
+        </p>
       </div>
 
-      <div className="ruled bg-card brutal-6 grid border-2 sm:grid-cols-2">
-        <div className="p-5 sm:p-7">
-          <p className="text-eyebrow text-muted-foreground uppercase">Price in {period}</p>
-          <p className="font-display tnum text-figure mt-2">{formatUsd(value)}</p>
-          <p className="text-muted-foreground mt-2 text-sm">{item.unit}</p>
-        </div>
-        <div className="ruled border-t-2 p-5 sm:border-t-0 sm:border-l-2 sm:p-7">
-          <p className="text-eyebrow text-muted-foreground uppercase">In {baseYear} dollars</p>
-          <p className="font-display tnum text-figure mt-2">
-            {adjusted == null ? "—" : formatUsd(adjusted)}
-          </p>
-          <p className="text-muted-foreground mt-2 text-sm">
-            {adjusted == null
-              ? "No CPI reading covers this month."
+      <StatRail>
+        <Stat label={`Price in ${period}`} value={formatUsd(value)} note={item.unit} />
+        <Stat
+          label={`In ${baseYear} dollars`}
+          value={adjusted == null ? "—" : formatUsd(adjusted)}
+          note={
+            adjusted == null
+              ? "No CPI covers this month"
               : monthlyCpi
-                ? `Converted with the CPI-U reading for ${period} itself.`
-                : `CPI for ${period} was never published — converted with the ${year} annual average instead.`}
-          </p>
-        </div>
-      </div>
+                ? `Converted with the CPI-U reading for ${period} itself`
+                : `CPI for ${period} was never published — ${year} annual average used`
+          }
+        />
+        <Stat
+          label="Month on month"
+          value={mom == null ? "—" : `${mom >= 0 ? "+" : ""}${mom.toFixed(1)}%`}
+          tone={mom == null ? undefined : mom >= 0 ? "up" : "down"}
+          note={priorValue ? `vs ${formatUsd(priorValue)} the month before` : "No prior month"}
+        />
+        <Stat
+          label={`Against the ${year} average`}
+          value={`${vsYear >= 0 ? "+" : ""}${vsYear.toFixed(1)}%`}
+          tone={vsYear >= 0 ? "up" : "down"}
+          note={`${year} averaged ${formatUsd(yearMean)} over ${inYear.length} months`}
+        />
+      </StatRail>
 
-      <div className="mt-4 flex items-center justify-between gap-4">
+      <nav className="mt-3 flex items-center justify-between gap-3">
         {previous ? (
-          <Link
-            href={`/costs/${slug}/${previous.year}/${pad(previous.month)}`}
-            className="ruled hover:bg-accent flex items-center gap-2 border-2 px-3 py-1.5 text-sm transition-colors"
-          >
-            <ArrowLeftIcon className="size-3.5" />
-            {monthName(previous.month)} {previous.year}
-          </Link>
+          <Neighbour href={`/costs/${slug}/${previous.year}/${pad(previous.month)}`} back>
+            {monthName(previous.month).slice(0, 3)} {previous.year}
+          </Neighbour>
         ) : (
           <span />
         )}
         <Link
           href={`/costs/${slug}/${year}`}
-          className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-4"
+          className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-4"
         >
           All of {year}
         </Link>
         {next ? (
-          <Link
-            href={`/costs/${slug}/${next.year}/${pad(next.month)}`}
-            className="ruled hover:bg-accent flex items-center gap-2 border-2 px-3 py-1.5 text-sm transition-colors"
-          >
-            {monthName(next.month)} {next.year}
-            <ArrowRightIcon className="size-3.5" />
-          </Link>
+          <Neighbour href={`/costs/${slug}/${next.year}/${pad(next.month)}`}>
+            {monthName(next.month).slice(0, 3)} {next.year}
+          </Neighbour>
         ) : (
           <span />
         )}
-      </div>
+      </nav>
+
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+          The rest of {year}
+        </h2>
+        <ul className="ruled grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
+          {inYear.map((m) => (
+            <li key={m.month} className="bg-border">
+              <Link
+                href={`/costs/${slug}/${year}/${pad(m.month)}`}
+                aria-current={m.month === month ? "page" : undefined}
+                className={`flex h-full flex-col gap-1 px-2.5 py-2 transition-colors ${
+                  m.month === month
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card hover:bg-accent"
+                }`}
+              >
+                <span className="text-xs opacity-70">{monthName(m.month).slice(0, 3)}</span>
+                <span className="tnum font-mono text-sm font-semibold">{formatUsd(m.value)}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {siblings.length ? (
-        <Section title="Other prices that month">
-          <ul className="ruled grid border-2 sm:grid-cols-2">
+        <section className="mt-8">
+          <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+            Other prices that month
+          </h2>
+          <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
             {siblings.map((other) => (
-              <li key={other.slug} className="ruled border-b-2 last:border-b-0 sm:even:border-l-2">
+              <li key={other.slug} className="bg-border">
                 <Link
                   href={`/costs/${other.slug}/${year}/${pad(month)}`}
-                  className="hover:bg-accent flex items-center gap-3 p-4 transition-colors"
+                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
                   <ItemArt
                     slug={other.slug}
-                    className="size-6"
+                    className="size-5"
                     style={{ color: colorFor(other.slug) }}
                   />
-                  <span className="font-display font-bold">
-                    {other.label} in {period}
-                  </span>
+                  <span className="text-sm font-medium">{other.label}</span>
                 </Link>
               </li>
             ))}
           </ul>
-        </Section>
+        </section>
       ) : null}
     </Shell>
+  )
+}
+
+function Neighbour({
+  href,
+  back,
+  children,
+}: {
+  href: string
+  back?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      className="ruled hover:bg-accent tnum flex items-center gap-1.5 border px-2.5 py-1 font-mono text-xs transition-colors"
+    >
+      {back ? <ArrowLeftIcon className="size-3" /> : null}
+      {children}
+      {back ? null : <ArrowRightIcon className="size-3" />}
+    </Link>
   )
 }

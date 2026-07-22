@@ -7,7 +7,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { InflationCalculator } from "@/components/inflation-calculator"
 import { ItemArt } from "@/components/item-art"
-import { Crumbs, Faq, PageTitle, Section, Shell } from "@/components/page-shell"
+import { Crumbs, Shell } from "@/components/page-shell"
 import { CALCULATORS, type CalculatorPage } from "@/lib/calculators"
 import { getAnnualCpiPoints } from "@/lib/cpi"
 import { getAnnual, getItems } from "@/lib/data"
@@ -41,11 +41,13 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
   const related = await Promise.all(
     items
       .filter((item) => page.costItems.includes(item.slug))
-      .map(async (item) => ({ item, latest: (await getAnnual(item.slug)).at(-1)?.value ?? 0 })),
+      .map(async (item) => ({ item, price: (await getAnnual(item.slug)).at(-1)?.value ?? 0 })),
   )
 
+  const others = CALCULATORS.filter((c) => c.slug !== page.slug)
+
   return (
-    <Shell>
+    <Shell className="py-6 sm:py-8">
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
@@ -54,11 +56,14 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
         ]}
       />
 
-      <PageTitle eyebrow="CPI-U · Bureau of Labor Statistics" lede={page.intro}>
-        {page.heading}
-      </PageTitle>
+      <div className="mb-4">
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
+          {page.heading}
+        </h1>
+        <p className="text-muted-foreground mt-2.5 max-w-2xl text-sm text-pretty">{page.intro}</p>
+      </div>
 
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+      <Suspense fallback={<Skeleton className="h-[32rem] w-full" />}>
         <InflationCalculator
           points={points}
           noun={page.noun}
@@ -69,66 +74,70 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
       {/* Deep links, not decoration: each chip loads the tool with those
           numbers already in it. On the old site all three linked to the
           identical URL and the page had no calculator on it at all. */}
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <span className="text-eyebrow text-muted-foreground uppercase">Try</span>
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <span className="text-eyebrow text-muted-foreground mr-1 uppercase">Try</span>
         {page.examples.map((example) => (
           <Link
             key={`${example.amount}-${example.year}`}
             href={`${page.path}?amount=${example.amount}&from=${example.year}&to=${latest}`}
-            className="ruled hover:bg-primary hover:text-primary-foreground tnum border-2 px-2.5 py-1 font-mono text-sm transition-colors"
+            className="ruled hover:bg-primary hover:text-primary-foreground tnum border px-2 py-1 font-mono text-xs transition-colors"
           >
             {formatUsd(example.amount)} in {example.year}
           </Link>
         ))}
       </div>
 
-      <Section title="What people use this for">
-        <ul className="ruled divide-y-2 border-2">
-          {page.useCases.map((useCase) => (
-            <li key={useCase} className="p-4 text-sm sm:p-5">
-              {useCase}
-            </li>
-          ))}
-        </ul>
-      </Section>
-
       {related.length ? (
-        <Section title="Actual prices, not just the index">
-          <p className="text-muted-foreground mb-4 max-w-2xl text-sm">
-            The calculator above adjusts a dollar amount by the all-items index. These are the
-            recorded average prices BLS collected for the goods themselves.
-          </p>
-          <ul className="ruled grid border-2 sm:grid-cols-2">
-            {related.map(({ item, latest: price }) => (
-              <li key={item.slug} className="ruled border-b-2 last:border-b-0 sm:even:border-l-2">
+        <section className="mt-8">
+          <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+            Actual prices, not just the index
+          </h2>
+          <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+            {related.map(({ item, price }) => (
+              <li key={item.slug} className="bg-border">
                 <Link
                   href={`/costs/${item.slug}`}
-                  className="hover:bg-accent flex items-center gap-3 p-4 transition-colors"
+                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
                   <ItemArt
                     slug={item.slug}
-                    className="size-7"
+                    className="size-5"
                     style={{ color: colorFor(item.slug) }}
                   />
-                  <span className="min-w-0">
-                    <span className="font-display block font-bold">
-                      Historical {item.labelAttributive} prices
-                    </span>
-                    <span className="text-muted-foreground text-sm">
-                      {item.firstYear}–{item.lastYear} · {item.unit}
-                    </span>
+                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="tnum ml-auto font-mono text-sm font-semibold">
+                    {formatUsd(price)}
                   </span>
-                  <span className="tnum ml-auto font-mono font-bold">{formatUsd(price)}</span>
                 </Link>
               </li>
             ))}
           </ul>
-        </Section>
+        </section>
       ) : null}
 
-      <Section title="Questions">
-        <Faq items={page.faq} />
-      </Section>
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">Other calculators</h2>
+        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+          <li className="bg-border">
+            <Link
+              href="/calculator"
+              className="bg-card hover:bg-accent block h-full px-3 py-2.5 text-sm font-medium transition-colors"
+            >
+              Any amount
+            </Link>
+          </li>
+          {others.map((other) => (
+            <li key={other.slug} className="bg-border">
+              <Link
+                href={other.path}
+                className="bg-card hover:bg-accent block h-full px-3 py-2.5 text-sm font-medium transition-colors"
+              >
+                {other.heading.replace(" inflation calculator", "")}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </Shell>
   )
 }

@@ -4,9 +4,12 @@ import Link from "next/link"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { InflationCalculator } from "@/components/inflation-calculator"
-import { Crumbs, Faq, PageTitle, Section, Shell } from "@/components/page-shell"
+import { ItemArt } from "@/components/item-art"
+import { Crumbs, Shell } from "@/components/page-shell"
 import { CALCULATORS } from "@/lib/calculators"
-import { getAnnualCpiPoints, defaultFromYear } from "@/lib/cpi"
+import { defaultFromYear, getAnnualCpiPoints } from "@/lib/cpi"
+import { getItems } from "@/lib/data"
+import { colorFor } from "@/lib/series"
 import { pageMetadata } from "@/lib/site"
 
 export const metadata = pageMetadata({
@@ -16,65 +19,69 @@ export const metadata = pageMetadata({
   path: "/calculator",
 })
 
-const FAQ = [
-  {
-    question: "Which inflation measure does this use?",
-    answer:
-      "CPI-U, the Consumer Price Index for All Urban Consumers, US city average, all items, not seasonally adjusted. It is the series most commonly meant by “the inflation rate”.",
-  },
-  {
-    question: "How far back does it go?",
-    answer:
-      "To 1913, the first year the Bureau of Labor Statistics published the index. Anything earlier is a reconstruction by someone else, not a BLS figure.",
-  },
-  {
-    question: "Why is the most recent year marked provisional?",
-    answer:
-      "An annual average needs twelve monthly readings. Until December is published, the current year's figure is a mean over the months released so far and will move.",
-  },
-]
-
 export default async function Page() {
-  const points = await getAnnualCpiPoints()
+  const [points, items] = await Promise.all([getAnnualCpiPoints(), getItems()])
   const latest = points.at(-1)?.year ?? new Date().getUTCFullYear()
 
   return (
-    <Shell>
+    <Shell className="py-6 sm:py-8">
       <Crumbs trail={[{ label: "Fiat Watch", href: "/" }, { label: "Inflation calculator" }]} />
 
-      <PageTitle
-        eyebrow="CPI-U · Bureau of Labor Statistics"
-        lede="Every figure here is the raw index ratio between two years — no smoothing, no seasonal adjustment, no rounding until the last step."
-      >
-        What is a dollar actually worth?
-      </PageTitle>
+      <div className="mb-4">
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
+          What is a dollar actually worth?
+        </h1>
+        <p className="text-muted-foreground mt-2.5 max-w-2xl text-sm text-pretty">
+          CPI-U, all items, not seasonally adjusted, back to 1913. The raw index ratio between two
+          years — no smoothing, no rounding until the last step.
+        </p>
+      </div>
 
-      <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-        <InflationCalculator
-          points={points}
-          defaults={{ amount: 100, from: defaultFromYear(points), to: latest }}
-        />
+      <Suspense fallback={<Skeleton className="h-[32rem] w-full" />}>
+        <InflationCalculator points={points} defaults={{ amount: 100, from: defaultFromYear(points), to: latest }} />
       </Suspense>
 
-      <Section title="By what you are comparing">
-        <ul className="ruled grid gap-0 border-2 sm:grid-cols-2">
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">By what you compare</h2>
+        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
           {CALCULATORS.map((c) => (
-            <li key={c.slug} className="ruled border-b-2 last:border-b-0 sm:[&:nth-last-child(-n+1)]:border-b-0">
+            <li key={c.slug} className="bg-border">
               <Link
                 href={c.path}
-                className="hover:bg-accent flex h-full flex-col gap-1 p-4 transition-colors"
+                className="bg-card hover:bg-accent block h-full px-3 py-2.5 text-sm font-medium transition-colors"
               >
-                <span className="font-display font-bold">{c.heading}</span>
-                <span className="text-muted-foreground text-sm">{c.description}</span>
+                {c.heading.replace(" inflation calculator", "")}
               </Link>
             </li>
           ))}
         </ul>
-      </Section>
+      </section>
 
-      <Section title="Questions">
-        <Faq items={FAQ} />
-      </Section>
+      <section className="mt-8">
+        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
+          Or start from a real price
+        </h2>
+        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-5">
+          {items.map((item) => (
+            <li key={item.slug} className="bg-border">
+              <Link
+                href={`/costs/${item.slug}`}
+                className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
+              >
+                <ItemArt
+                  slug={item.slug}
+                  className="size-5"
+                  style={{ color: colorFor(item.slug) }}
+                />
+                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-muted-foreground tnum ml-auto font-mono text-xs">
+                  {item.firstYear}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
     </Shell>
   )
 }

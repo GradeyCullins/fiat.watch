@@ -4,6 +4,7 @@ import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
 import "@workspace/ui/globals.css"
 import { cn } from "@workspace/ui/lib/utils"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
+import { NuqsAdapter } from "nuqs/adapters/next/app"
 
 import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -59,14 +60,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       )}
     >
       <body className="flex min-h-dvh flex-col">
-        <ThemeProvider>
-          <TooltipProvider>
-            <SiteHeader />
-            {/* The footer lives in the (pages) group, not here: the home page
-                is sized to fill the viewport exactly and must not scroll. */}
-            <div className="flex flex-1 flex-col">{children}</div>
-          </TooltipProvider>
-        </ThemeProvider>
+        {/* nuqs holds the chart/calculator state that belongs in the URL. */}
+        <NuqsAdapter>
+          <ThemeProvider>
+            <TooltipProvider>
+              <SiteHeader />
+              {/* The footer lives in the (pages) group, not here: the home page
+                  is sized to fill the viewport exactly and must not scroll. */}
+              <div className="flex flex-1 flex-col">{children}</div>
+            </TooltipProvider>
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   )

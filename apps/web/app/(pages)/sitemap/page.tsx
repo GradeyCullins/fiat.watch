@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { ItemArt } from "@/components/item-art"
-import { Crumbs, PageTitle, Section, Shell } from "@/components/page-shell"
+import { Crumbs, Shell } from "@/components/page-shell"
 import { CALCULATORS } from "@/lib/calculators"
 import { getAnnual, getItems, getPriceKeys } from "@/lib/data"
 import { colorFor } from "@/lib/series"
@@ -25,12 +25,15 @@ export default async function Page() {
     <Shell wide>
       <Crumbs trail={[{ label: "Fiat Watch", href: "/" }, { label: "Sitemap" }]} />
 
-      <PageTitle
-        eyebrow={`${keys.length.toLocaleString()} monthly readings`}
-        lede="Year pages link on to every month BLS published for that year."
-      >
-        Everything on this site
-      </PageTitle>
+      <div className="mb-6">
+        <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
+          Everything on this site
+        </h1>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {keys.length.toLocaleString()} monthly readings. Year pages link on to every month BLS
+          published for that year.
+        </p>
+      </div>
 
       <Section title="Tools">
         <ul className="flex flex-wrap gap-2">
@@ -68,6 +71,15 @@ export default async function Page() {
         </Section>
       ))}
     </Shell>
+  )
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-8">
+      <h2 className="font-display mb-3 text-lg font-bold tracking-tight">{title}</h2>
+      {children}
+    </section>
   )
 }
 

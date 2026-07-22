@@ -37,7 +37,7 @@ export function Crumbs({ trail }: { trail: Crumb[] }) {
           })),
         })}
       />
-      <Breadcrumb className="mb-6">
+      <Breadcrumb className="mb-4">
         <BreadcrumbList className="text-eyebrow uppercase">
           {/* The separator renders its own <li>, so it has to be a sibling of
               the item rather than a child of it. */}
@@ -86,72 +86,37 @@ export function Shell({
   )
 }
 
-export function PageTitle({
-  eyebrow,
-  children,
-  lede,
+/** The row of figures that opens every data page. Four across on desktop. */
+export function StatRail({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="ruled bg-card grid border sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+  )
+}
+
+export function Stat({
+  label,
+  value,
+  note,
+  tone,
 }: {
-  eyebrow?: string
-  children: React.ReactNode
-  lede?: React.ReactNode
+  label: string
+  value: string
+  note?: string
+  tone?: "up" | "down"
 }) {
   return (
-    <div className="mb-8">
-      {eyebrow ? (
-        <p className="text-eyebrow text-muted-foreground mb-3 uppercase">{eyebrow}</p>
-      ) : null}
-      <h1 className="font-display text-headline text-balance">{children}</h1>
-      {lede ? (
-        <p className="text-muted-foreground mt-4 max-w-2xl text-base text-pretty">{lede}</p>
-      ) : null}
+    <div className="ruled border-b px-4 py-3 last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:border-r lg:border-b-0 lg:[&:nth-child(2n)]:border-r lg:last:border-r-0">
+      <p className="text-eyebrow text-muted-foreground uppercase">{label}</p>
+      <p
+        className={cn(
+          "tnum mt-1.5 font-mono text-2xl leading-none font-bold",
+          tone === "up" && "text-up",
+          tone === "down" && "text-down",
+        )}
+      >
+        {value}
+      </p>
+      {note ? <p className="text-muted-foreground mt-1.5 text-xs">{note}</p> : null}
     </div>
-  )
-}
-
-export function Section({
-  title,
-  children,
-  className,
-}: {
-  title: string
-  children: React.ReactNode
-  className?: string
-}) {
-  return (
-    <section className={cn("mt-12", className)}>
-      <h2 className="font-display mb-4 text-2xl font-bold tracking-tight">{title}</h2>
-      {children}
-    </section>
-  )
-}
-
-/**
- * The FAQ block and its JSON-LD are generated from one array, so the markup
- * cannot drift from the visible questions. On the old site the homepage
- * declared three questions in `FAQPage` and displayed a different set.
- */
-export function Faq({ items }: { items: { question: string; answer: string }[] }) {
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={jsonLd({
-          "@type": "FAQPage",
-          mainEntity: items.map((item) => ({
-            "@type": "Question",
-            name: item.question,
-            acceptedAnswer: { "@type": "Answer", text: item.answer },
-          })),
-        })}
-      />
-      <dl className="ruled divide-y-2 border-2 [&>div]:p-4 sm:[&>div]:p-5">
-        {items.map((item) => (
-          <div key={item.question}>
-            <dt className="font-display text-lg font-bold">{item.question}</dt>
-            <dd className="text-muted-foreground mt-1.5 text-sm text-pretty">{item.answer}</dd>
-          </div>
-        ))}
-      </dl>
-    </>
   )
 }

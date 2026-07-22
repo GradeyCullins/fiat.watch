@@ -7,20 +7,13 @@ export async function SiteFooter() {
   const items = await getItems()
 
   return (
-    <footer className="ruled border-t-2">
-      <div className="mx-auto grid w-full max-w-[1800px] gap-8 px-4 py-10 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 xl:px-10">
-        <div>
-          <p className="font-display text-xl font-extrabold tracking-tight">FIAT WATCH</p>
-          <p className="text-muted-foreground mt-2 max-w-xs text-sm">
-            US consumer prices since 1913, straight from the Bureau of Labor Statistics. No
-            estimates, no smoothing.
-          </p>
-        </div>
-
+    <footer className="ruled mt-12 border-t">
+      <div className="mx-auto grid w-full max-w-[1800px] gap-8 px-4 py-8 sm:grid-cols-3 sm:px-6 xl:px-10">
         <FooterColumn title="Calculators">
+          <FooterLink href="/calculator">Inflation calculator</FooterLink>
           {CALCULATORS.map((c) => (
             <FooterLink key={c.slug} href={c.path}>
-              {c.heading}
+              {c.heading.replace(" inflation calculator", "")}
             </FooterLink>
           ))}
         </FooterColumn>
@@ -28,23 +21,21 @@ export async function SiteFooter() {
         <FooterColumn title="Prices">
           {items.map((item) => (
             <FooterLink key={item.slug} href={`/costs/${item.slug}`}>
-              Historical {item.labelAttributive} prices
+              {item.label}
             </FooterLink>
           ))}
         </FooterColumn>
 
-        <FooterColumn title="About">
+        <FooterColumn title="Fiat Watch">
           <FooterLink href="/">Compare prices</FooterLink>
-          <FooterLink href="/calculator">Inflation calculator</FooterLink>
           {/* Linked deliberately — the HTML sitemap was orphaned on the old site. */}
-          <FooterLink href="/sitemap">Sitemap</FooterLink>
-          <FooterLink href="https://www.bls.gov/cpi/">BLS CPI home</FooterLink>
+          <FooterLink href="/sitemap">Every page</FooterLink>
         </FooterColumn>
       </div>
 
-      <div className="ruled text-muted-foreground border-t-2 px-4 py-4 text-xs sm:px-6 xl:px-10">
-        Source: US Bureau of Labor Statistics, CPI-U (CUUR0000SA0) and Average Price Data. Figures
-        are national averages and are not seasonally adjusted.
+      <div className="ruled text-muted-foreground flex flex-wrap items-center justify-between gap-2 border-t px-4 py-3 text-xs sm:px-6 xl:px-10">
+        <span>US Bureau of Labor Statistics · CPI-U and Average Price Data</span>
+        <span className="tnum font-mono">National averages, not seasonally adjusted</span>
       </div>
     </footer>
   )
@@ -53,8 +44,8 @@ export async function SiteFooter() {
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-eyebrow text-muted-foreground mb-3 uppercase">{title}</p>
-      <ul className="space-y-1.5">{children}</ul>
+      <p className="text-eyebrow text-muted-foreground mb-2.5 uppercase">{title}</p>
+      <ul className="space-y-1">{children}</ul>
     </div>
   )
 }
@@ -62,7 +53,7 @@ function FooterColumn({ title, children }: { title: string; children: React.Reac
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <li>
-      <Link href={href} className="hover:text-foreground text-sm underline-offset-4 hover:underline">
+      <Link href={href} className="hover:text-foreground text-muted-foreground text-sm">
         {children}
       </Link>
     </li>
