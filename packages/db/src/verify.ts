@@ -9,6 +9,7 @@ import { readFileSync } from "node:fs";
 import { and, eq, isNull, sql } from "drizzle-orm";
 
 import { closeDb, getDb } from "./client";
+import { ITEMS, SERIES } from "./ingest/catalog";
 import { cpi, prices } from "./schema";
 
 const oldDir = process.argv[2];
@@ -80,8 +81,18 @@ try {
     { months: Record<string, Record<string, number>> }
   >;
 
+  // Prices are keyed by BLS series id now, so the old file's slugs have to be
+  // resolved through the catalogue — and only the national series, which is
+  // what the Rails app carried.
+  const nationalSeries = new Map(
+    SERIES.filter((s) => s.areaCode === "0000").flatMap((s) => {
+      const item = ITEMS.find((i) => i.itemCode === s.itemCode);
+      return item ? [[item.slug, s.seriesId] as const] : [];
+    }),
+  );
+
   const newPrices = await db.select().from(prices);
-  const newKey = new Map(newPrices.map((p) => [`${p.itemSlug}:${p.year}:${p.month}`, p.value]));
+  const newKey = new Map(newPrices.map((p) => [`${p.seriesId}:${p.year}:${p.month}`, p.value]));
 
   let priceMismatch = 0;
   let oldCount = 0;
@@ -89,7 +100,7 @@ try {
     for (const [year, months] of Object.entries(item.months)) {
       for (const [month, value] of Object.entries(months)) {
         oldCount++;
-        const k = `${slug}:${Number(year)}:${Number(month)}`;
+        const k = `${nationalSeries.get(slug)}:${Number(year)}:${Number(month)}`;
         const got = newKey.get(k);
         if (got === undefined) {
           priceMismatch++;
@@ -111,7 +122,7 @@ try {
     const rows = await db
       .select()
       .from(prices)
-      .where(and(eq(prices.itemSlug, slug), eq(prices.year, 2025), eq(prices.month, 10)));
+      .where(and(eq(prices.seriesId, nationalSeries.get(slug) ?? ""), eq(prices.year, 2025), eq(prices.month, 10)));
     note(`${slug.padEnd(12)} ${rows.length === 0 ? "absent (expected for food items)" : `present: ${rows[0]?.value}`}`);
   }
 

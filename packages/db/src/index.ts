@@ -1,13 +1,28 @@
 export { getDb, closeDb, createMemoryDb, createMigratedDb, schema, type Database } from "./client";
-export { items, prices, cpi, ingestRuns, type Item, type Price, type Cpi } from "./schema";
+export {
+  items,
+  areas,
+  series,
+  prices,
+  cpi,
+  ingestRuns,
+  type Item,
+  type Area,
+  type Series,
+  type Price,
+  type Cpi,
+} from "./schema";
 export {
   listItems,
+  areasForItem,
+  allItemKeys,
   annualPrices,
   monthlyPrices,
   monthlySeries,
   allPriceKeys,
   allCpi,
   latestCpiYear,
+  NATIONAL,
   type ItemSummary,
   type AnnualPrice,
 } from "./queries";

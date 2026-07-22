@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { createMigratedDb } from "./client";
-import { cpi, items, prices } from "./schema";
+import { areas, cpi, items, prices, series } from "./schema";
 
 const db = await createMigratedDb();
 
@@ -36,15 +36,33 @@ async function expectRejection(promise: Promise<unknown>, pattern: RegExp) {
 beforeAll(async () => {
   await migrate(db, { migrationsFolder: fileURLToPath(new URL("../drizzle", import.meta.url)) });
   await db.insert(items).values({
+    itemCode: "74714",
     slug: "gas",
     label: "gas",
     labelAttributive: "gas",
     unit: "per gallon",
-    seriesId: "APU000074714",
-    seriesName: "Gasoline, unleaded regular",
+    category: "energy",
+    group: "gasoline",
+    blsName: "Gasoline, unleaded regular, per gallon/3.785 liters",
     sortOrder: 1,
   });
+  await db.insert(areas).values({
+    areaCode: "0000",
+    slug: "us",
+    name: "United States",
+    kind: "national",
+    blsName: "U.S. city average",
+  });
+  await db.insert(series).values({
+    seriesId: SERIES_ID,
+    itemCode: "74714",
+    areaCode: "0000",
+    beginYear: 1976,
+    endYear: 2026,
+  });
 });
+
+const SERIES_ID = "APU000074714";
 
 describe("cpi period uniqueness", () => {
   it("stores a monthly and an annual row for the same year", async () => {
@@ -105,7 +123,7 @@ describe("prices", () => {
     // A null month would mean "annual", and storing that here is precisely the
     // second-source-of-truth the old average_price_data.json was.
     await expectRejection(
-      db.insert(prices).values({ itemSlug: "gas", year: 1980, month: null as never, value: 1.245 }),
+      db.insert(prices).values({ seriesId: SERIES_ID, year: 1980, month: null as never, value: 1.245 }),
       /null value|not-null/i,
     );
   });
@@ -113,7 +131,7 @@ describe("prices", () => {
   it("derives the annual average from months in SQL", async () => {
     await db.insert(prices).values(
       Array.from({ length: 12 }, (_, i) => ({
-        itemSlug: "gas",
+        seriesId: SERIES_ID,
         year: 1981,
         month: i + 1,
         value: i + 1,
@@ -123,15 +141,15 @@ describe("prices", () => {
     const [row] = await db
       .select({ avg: sql<number>`avg(${prices.value})::float8`, n: sql<number>`count(*)::int` })
       .from(prices)
-      .where(and(eq(prices.itemSlug, "gas"), eq(prices.year, 1981)));
+      .where(and(eq(prices.seriesId, SERIES_ID), eq(prices.year, 1981)));
 
     expect(row?.n).toBe(12);
     expect(row?.avg).toBeCloseTo(6.5, 10);
   });
 
-  it("rejects a price for an unknown item", async () => {
+  it("rejects a price for an unknown series", async () => {
     await expectRejection(
-      db.insert(prices).values({ itemSlug: "caviar", year: 2000, month: 1, value: 99 }),
+      db.insert(prices).values({ seriesId: "APU0000NOPE", year: 2000, month: 1, value: 99 }),
       /foreign key/i,
     );
   });
@@ -144,14 +162,14 @@ describe("an absent row is meaningful", () => {
     // is no row at all; a 0 would be a price, and charts must gap rather than
     // interpolate across it.
     await db.insert(prices).values([
-      { itemSlug: "gas", year: 2025, month: 9, value: 3.1 },
-      { itemSlug: "gas", year: 2025, month: 11, value: 3.3 },
+      { seriesId: SERIES_ID, year: 2025, month: 9, value: 3.1 },
+      { seriesId: SERIES_ID, year: 2025, month: 11, value: 3.3 },
     ]);
 
     const rows = await db
       .select()
       .from(prices)
-      .where(and(eq(prices.itemSlug, "gas"), eq(prices.year, 2025)));
+      .where(and(eq(prices.seriesId, SERIES_ID), eq(prices.year, 2025)));
 
     expect(rows.map((r) => r.month).sort((a, b) => a - b)).toEqual([9, 11]);
     expect(rows.find((r) => r.month === 10)).toBeUndefined();

@@ -144,21 +144,39 @@ async function fetchWindow(
  * during the shutdown and could not be done retroactively, so the reading does
  * not exist and never will.
  */
+/** v2 accepts 50 series per request with a key, 25 without. */
+const SERIES_PER_REQUEST = { withKey: 50, withoutKey: 25 };
+
 export async function fetchSeries(options: {
   seriesIds: string[];
   startYear: number;
   endYear: number;
   apiKey?: string | undefined;
-  onWindow?: (start: number, end: number, rows: number) => void;
+  onWindow?: (start: number, end: number, rows: number, batch: number, batches: number) => void;
 }): Promise<Observation[]> {
   const { seriesIds, startYear, endYear, apiKey, onWindow } = options;
   const all: Observation[] = [];
 
-  for (const [from, to] of yearWindows(startYear, endYear, Boolean(apiKey))) {
-    const rows = await fetchWindow(seriesIds, from, to, apiKey);
-    onWindow?.(from, to, rows.length);
-    all.push(...rows);
+  const size = apiKey ? SERIES_PER_REQUEST.withKey : SERIES_PER_REQUEST.withoutKey;
+  const batches: string[][] = [];
+  for (let i = 0; i < seriesIds.length; i += size) batches.push(seriesIds.slice(i, i + size));
+
+  const windows = [...yearWindows(startYear, endYear, Boolean(apiKey))];
+
+  for (const [b, batch] of batches.entries()) {
+    for (const [from, to] of windows) {
+      const rows = await fetchWindow(batch, from, to, apiKey);
+      onWindow?.(from, to, rows.length, b + 1, batches.length);
+      all.push(...rows);
+    }
   }
 
   return all;
+}
+
+/** How many requests a run will cost, so the daily quota is not a surprise. */
+export function requestCount(seriesCount: number, startYear: number, endYear: number, hasKey: boolean) {
+  const size = hasKey ? SERIES_PER_REQUEST.withKey : SERIES_PER_REQUEST.withoutKey;
+  const windows = [...yearWindows(startYear, endYear, hasKey)].length;
+  return Math.ceil(seriesCount / size) * windows;
 }

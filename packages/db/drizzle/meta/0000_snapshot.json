@@ -1,9 +1,60 @@
 {
-  "id": "b92d56e0-1432-40a9-b550-c9d69f26b4c5",
+  "id": "cfaa54e8-ec4e-4f25-a704-dc2cb876cb72",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.areas": {
+      "name": "areas",
+      "schema": "",
+      "columns": {
+        "area_code": {
+          "name": "area_code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bls_name": {
+          "name": "bls_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "areas_slug_unique": {
+          "name": "areas_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.cpi": {
       "name": "cpi",
       "schema": "",
@@ -121,10 +172,16 @@
       "name": "items",
       "schema": "",
       "columns": {
+        "item_code": {
+          "name": "item_code",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
         "slug": {
           "name": "slug",
           "type": "text",
-          "primaryKey": true,
+          "primaryKey": false,
           "notNull": true
         },
         "label": {
@@ -145,14 +202,21 @@
           "primaryKey": false,
           "notNull": true
         },
-        "series_id": {
-          "name": "series_id",
+        "category": {
+          "name": "category",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "series_name": {
-          "name": "series_name",
+        "group": {
+          "name": "group",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "bls_name": {
+          "name": "bls_name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -169,11 +233,11 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "items_series_id_unique": {
-          "name": "items_series_id_unique",
+        "items_slug_unique": {
+          "name": "items_slug_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "series_id"
+            "slug"
           ]
         }
       },
@@ -185,8 +249,8 @@
       "name": "prices",
       "schema": "",
       "columns": {
-        "item_slug": {
-          "name": "item_slug",
+        "series_id": {
+          "name": "series_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -211,11 +275,11 @@
         }
       },
       "indexes": {
-        "prices_item_year_idx": {
-          "name": "prices_item_year_idx",
+        "prices_series_year_idx": {
+          "name": "prices_series_year_idx",
           "columns": [
             {
-              "expression": "item_slug",
+              "expression": "series_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -234,15 +298,15 @@
         }
       },
       "foreignKeys": {
-        "prices_item_slug_items_slug_fk": {
-          "name": "prices_item_slug_items_slug_fk",
+        "prices_series_id_series_series_id_fk": {
+          "name": "prices_series_id_series_series_id_fk",
           "tableFrom": "prices",
-          "tableTo": "items",
+          "tableTo": "series",
           "columnsFrom": [
-            "item_slug"
+            "series_id"
           ],
           "columnsTo": [
-            "slug"
+            "series_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -250,13 +314,130 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "prices_item_period_key": {
-          "name": "prices_item_period_key",
+        "prices_series_period_key": {
+          "name": "prices_series_period_key",
           "nullsNotDistinct": false,
           "columns": [
-            "item_slug",
+            "series_id",
             "year",
             "month"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.series": {
+      "name": "series",
+      "schema": "",
+      "columns": {
+        "series_id": {
+          "name": "series_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "item_code": {
+          "name": "item_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "area_code": {
+          "name": "area_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "begin_year": {
+          "name": "begin_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_year": {
+          "name": "end_year",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_discontinued": {
+          "name": "is_discontinued",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "series_item_idx": {
+          "name": "series_item_idx",
+          "columns": [
+            {
+              "expression": "item_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "series_area_idx": {
+          "name": "series_area_idx",
+          "columns": [
+            {
+              "expression": "area_code",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "series_item_code_items_item_code_fk": {
+          "name": "series_item_code_items_item_code_fk",
+          "tableFrom": "series",
+          "tableTo": "items",
+          "columnsFrom": [
+            "item_code"
+          ],
+          "columnsTo": [
+            "item_code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "series_area_code_areas_area_code_fk": {
+          "name": "series_area_code_areas_area_code_fk",
+          "tableFrom": "series",
+          "tableTo": "areas",
+          "columnsFrom": [
+            "area_code"
+          ],
+          "columnsTo": [
+            "area_code"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "series_item_area_key": {
+          "name": "series_item_area_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "item_code",
+            "area_code"
           ]
         }
       },
