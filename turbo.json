@@ -39,6 +39,16 @@
         "^build"
       ],
       "outputs": []
+    },
+    "ingest": {
+      "cache": false,
+      "env": [
+        "BLS_API_KEY",
+        "BLS_END_YEAR"
+      ]
     }
-  }
+  },
+  "globalEnv": [
+    "NEXT_PUBLIC_SITE_URL"
+  ]
 }

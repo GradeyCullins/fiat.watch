@@ -8,10 +8,10 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { createMemoryDb } from "./client";
+import { createMigratedDb } from "./client";
 import { cpi, items, prices } from "./schema";
 
-const db = createMemoryDb();
+const db = await createMigratedDb();
 
 /**
  * Drizzle wraps driver errors: `message` is always "Failed query: …" and the

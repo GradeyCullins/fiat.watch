@@ -1,29 +1,72 @@
-import { Geist, Geist_Mono } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
 
 import "@workspace/ui/globals.css"
+import { cn } from "@workspace/ui/lib/utils"
+import { TooltipProvider } from "@workspace/ui/components/tooltip"
+
+import { SiteHeader } from "@/components/site-header"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@workspace/ui/lib/utils";
+import { SITE } from "@/lib/site"
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'})
-
-const fontMono = Geist_Mono({
+/**
+ * Three families, three jobs. The old site's "display serif" was `ui-serif`
+ * with no webfont behind it, so it rendered as a different typeface on every
+ * operating system — this is a real one.
+ */
+const display = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-display-src",
 })
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+const sans = Geist({ subsets: ["latin"], variable: "--font-sans-src" })
+
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono-src" })
+
+export const metadata: Metadata = {
+  // Required: without it, relative OG image URLs are a build error.
+  metadataBase: SITE.url,
+  title: {
+    default: `US Inflation Calculator With CPI Data | ${SITE.name}`,
+    template: `%s | ${SITE.name}`,
+  },
+  description:
+    "Find out what your money was really worth. Compare US prices and purchasing power across any two years using official BLS CPI data.",
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name, url: SITE.url.toString() }],
+  category: "finance",
+  robots: { index: true, follow: true },
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f6f3e7" },
+    { media: "(prefers-color-scheme: dark)", color: "#211f1c" },
+  ],
+  colorScheme: "light dark",
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+      className={cn(
+        "antialiased font-sans",
+        display.variable,
+        sans.variable,
+        mono.variable,
+      )}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className="flex min-h-dvh flex-col">
+        <ThemeProvider>
+          <TooltipProvider>
+            <SiteHeader />
+            {/* The footer lives in the (pages) group, not here: the home page
+                is sized to fill the viewport exactly and must not scroll. */}
+            <div className="flex flex-1 flex-col">{children}</div>
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

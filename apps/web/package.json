@@ -12,12 +12,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@workspace/core": "workspace:*",
+    "@workspace/db": "workspace:*",
     "@workspace/ui": "workspace:*",
     "lucide-react": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "recharts": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "catalog:",

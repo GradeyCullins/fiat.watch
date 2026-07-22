@@ -1,9 +1,10 @@
-export { getDb, closeDb, createMemoryDb, DATA_DIR, schema, type Database } from "./client";
+export { getDb, closeDb, createMemoryDb, createMigratedDb, schema, type Database } from "./client";
 export { items, prices, cpi, ingestRuns, type Item, type Price, type Cpi } from "./schema";
 export {
   listItems,
   annualPrices,
   monthlyPrices,
+  allPriceKeys,
   allCpi,
   latestCpiYear,
   type ItemSummary,

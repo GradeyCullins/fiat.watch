@@ -22,7 +22,7 @@ export interface ItemSummary {
 
 /** Every item, with the coverage facts a page needs to caveat itself honestly. */
 export async function listItems(): Promise<ItemSummary[]> {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db
     .select({
       slug: items.slug,
@@ -80,7 +80,7 @@ export interface AnnualPrice {
  * Deriving means there is exactly one source of truth and no drift is possible.
  */
 export async function annualPrices(slug: string): Promise<AnnualPrice[]> {
-  const db = getDb();
+  const db = await getDb();
   return db
     .select({
       year: prices.year,
@@ -95,17 +95,30 @@ export async function annualPrices(slug: string): Promise<AnnualPrice[]> {
 
 /** Monthly prices for one item-year. Absent months are simply not returned. */
 export async function monthlyPrices(slug: string, year: number) {
-  const db = getDb();
-  return getDb()
+  const db = await getDb();
+  return db
     .select({ month: prices.month, value: prices.value })
     .from(prices)
     .where(and(eq(prices.itemSlug, slug), eq(prices.year, year)))
     .orderBy(asc(prices.month));
 }
 
+/**
+ * Every (item, year, month) that actually has a reading — the exact set of
+ * month pages that should exist. Absent months (October 2025) are simply not
+ * rows, so they never become a URL.
+ */
+export async function allPriceKeys() {
+  const db = await getDb();
+  return db
+    .select({ slug: prices.itemSlug, year: prices.year, month: prices.month })
+    .from(prices)
+    .orderBy(asc(prices.itemSlug), asc(prices.year), asc(prices.month));
+}
+
 /** Every CPI point, annual and monthly, for constructing a CpiTable. */
 export async function allCpi() {
-  const db = getDb();
+  const db = await getDb();
   return db
     .select({
       year: cpi.year,
@@ -120,7 +133,7 @@ export async function allCpi() {
 
 /** The year every "in today's dollars" figure is expressed in. */
 export async function latestCpiYear() {
-  const db = getDb();
+  const db = await getDb();
   const [row] = await db
     .select({
       year: sql<number>`max(${cpi.year})::int`,

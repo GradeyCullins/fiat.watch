@@ -17,12 +17,11 @@
  */
 import { sql } from "drizzle-orm";
 
-import { closeDb, getDb } from "../client";
+import { closeDb, getDb, type Database } from "../client";
 import { cpi, ingestRuns, items, prices } from "../schema";
 import { fetchSeries, type Observation } from "./bls";
 import {
   CPI_SERIES_ID,
-  CPI_SERIES_NAME,
   CPI_START_YEAR,
   ITEMS,
   ITEM_BY_SERIES_ID,
@@ -38,7 +37,7 @@ async function main() {
   const apiKey = process.env.BLS_API_KEY;
   const endYear = Number(process.env.BLS_END_YEAR ?? new Date().getUTCFullYear());
   const fetchedAt = new Date().toISOString();
-  const db = getDb();
+  const db = await getDb();
 
   if (!apiKey) {
     console.warn("! BLS_API_KEY not set — using 10-year request windows instead of 20.");
@@ -187,7 +186,7 @@ function detectProvisionalCpi(annual: Observation[], monthly: Observation[], end
 }
 
 /** Surface coverage, partial years and genuine holes rather than assuming. */
-async function report(db: ReturnType<typeof getDb>, monthlyPrices: Observation[]) {
+async function report(db: Database, monthlyPrices: Observation[]) {
   console.log("\nCoverage:");
   for (const item of ITEMS) {
     const rows = monthlyPrices.filter((o) => ITEM_BY_SERIES_ID.get(o.seriesId)?.slug === item.slug);

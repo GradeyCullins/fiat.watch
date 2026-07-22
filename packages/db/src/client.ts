@@ -3,10 +3,18 @@
  *
  * This database is a *build-time* source of truth. It is queried by
  * `generateStaticParams` and by page components during `next build`, and the
- * deployed artifact contains no database and opens no connection. That is why
- * an in-process engine is the right call rather than a server: there is no
- * daemon to run locally, no service container in CI, and no connection string
- * to leak. The persisted data directory doubles as the reproducible seed.
+ * deployed artifact contains no database and opens no connection.
+ *
+ * It is rehydrated **in memory** on first use: migrations are applied and
+ * `seed/bls-data.json` is imported. Nothing is read from or written to disk.
+ * That matters because `next build` collects page data across several worker
+ * processes at once, and PGlite — like Postgres — is single-writer over a data
+ * directory; seven processes opening the same one aborts the WASM runtime.
+ * An in-memory copy per process has no lock to contend for.
+ *
+ * It also means the committed JSON *is* the database. There is no build
+ * artifact to keep in sync, a clone can build the site with no BLS key and no
+ * network, and every environment starts from byte-identical data.
  *
  * If this ever needs to become a hosted Postgres, it is a driver swap —
  * `drizzle-orm/pglite` → `drizzle-orm/node-postgres`. The schema, the
@@ -14,34 +22,43 @@
  */
 import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
+import { migrate } from "drizzle-orm/pglite/migrator";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import * as schema from "./schema";
 
 /**
- * Note this deliberately avoids `new URL("../.pglite", import.meta.url)`.
- * Bundlers treat that exact pattern as a static asset reference and try to
- * resolve it as a module, which fails the Next build — the directory is
- * runtime state, not something to bundle.
+ * Built with `join`, never `new URL(x, import.meta.url)`: bundlers treat that
+ * exact pattern as a static asset reference and try to resolve it as a module,
+ * which fails the Next build. These are plain directories read at build time.
  */
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const MIGRATIONS = join(packageRoot, "drizzle");
 
-/** Overridable so tests and CI can point at a scratch directory. */
-export const DATA_DIR = process.env.PGLITE_DATA_DIR ?? join(packageRoot, ".pglite");
-
-let instance: ReturnType<typeof create> | undefined;
 let client: PGlite | undefined;
+let ready: Promise<Database> | undefined;
 
-function create(dataDir: string = DATA_DIR) {
-  client = new PGlite(dataDir);
-  return drizzle({ client, schema, casing: "snake_case" });
+function connect(pglite: PGlite) {
+  return drizzle({ client: pglite, schema, casing: "snake_case" });
 }
 
-/** Process-wide handle. PGlite is single-connection by design. */
-export function getDb() {
-  instance ??= create();
-  return instance;
+/**
+ * Process-wide handle, memoised on the promise so concurrent callers share one
+ * rehydration rather than racing three of them.
+ */
+export function getDb(): Promise<Database> {
+  ready ??= (async () => {
+    client = new PGlite();
+    const db = connect(client);
+    await migrate(db, { migrationsFolder: MIGRATIONS });
+    // Imported lazily: seed.ts reads the schema and would otherwise close a
+    // cycle back through this module.
+    const { importSeed } = await import("./seed");
+    await importSeed(db, { quiet: true });
+    return db;
+  })();
+  return ready;
 }
 
 /**
@@ -52,14 +69,20 @@ export function getDb() {
 export async function closeDb() {
   await client?.close();
   client = undefined;
-  instance = undefined;
+  ready = undefined;
 }
 
-/** An isolated in-memory database. Used by tests so they never touch the seed. */
+/** An isolated, empty in-memory database. Used by tests. */
 export function createMemoryDb() {
-  const client = new PGlite();
-  return drizzle({ client, schema, casing: "snake_case" });
+  return connect(new PGlite());
 }
 
-export type Database = ReturnType<typeof create>;
+/** An isolated in-memory database with the schema applied but no data. */
+export async function createMigratedDb() {
+  const db = createMemoryDb();
+  await migrate(db, { migrationsFolder: MIGRATIONS });
+  return db;
+}
+
+export type Database = ReturnType<typeof connect>;
 export { schema };

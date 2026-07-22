@@ -1,34 +1,33 @@
 /**
  * Seed export/import.
  *
- * `.pglite/` is 39MB across ~1,000 files — a build artifact, not something to
- * commit. The reproducible seed is this compact data file instead, so a clone
- * can build the whole site without a BLS key and without network access, and
- * so CI is not at the mercy of an API outage.
+ * `seed/bls-data.json` is the database. `getDb()` imports it into an in-memory
+ * PGlite on first use, so a clone can build the whole site without a BLS key
+ * and without network access, and CI is not at the mercy of an API outage.
  *
  * Records are written one per line: it is still valid JSON, but a monthly
  * refresh produces a diff you can actually read.
  *
- *   pnpm tsx src/seed.ts export   # db  → seed/bls-data.json
- *   pnpm tsx src/seed.ts import   # file → db
+ *   pnpm db:export   # db → seed/bls-data.json, after an ingest
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { sql } from "drizzle-orm";
 
-import { closeDb, getDb } from "./client";
+import type { Database } from "./client";
 import { cpi, items, prices } from "./schema";
 
-const SEED_DIR = fileURLToPath(new URL("../seed", import.meta.url));
-const SEED_FILE = `${SEED_DIR}/bls-data.json`;
+// See client.ts — `new URL(x, import.meta.url)` is a bundler asset reference.
+const SEED_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "seed");
+const SEED_FILE = join(SEED_DIR, "bls-data.json");
 
 /** [year, month|null, value, isProvisional, note|null] */
 type CpiTuple = [number, number | null, number, 0 | 1, string | null];
 /** [itemSlug, year, month, value] */
 type PriceTuple = [string, number, number, number];
 
-async function exportSeed() {
-  const db = getDb();
+export async function exportSeed(db: Database) {
   const itemRows = await db.select().from(items).orderBy(items.sortOrder);
   const cpiRows = await db.select().from(cpi).orderBy(cpi.year, cpi.month);
   const priceRows = await db.select().from(prices).orderBy(prices.itemSlug, prices.year, prices.month);
@@ -65,8 +64,7 @@ async function exportSeed() {
   );
 }
 
-async function importSeed() {
-  const db = getDb();
+export async function importSeed(db: Database, { quiet = false } = {}) {
   const data = JSON.parse(readFileSync(SEED_FILE, "utf8")) as {
     items: (typeof items.$inferInsert)[];
     cpi: CpiTuple[];
@@ -101,19 +99,10 @@ async function importSeed() {
       set: { value: sql`excluded.value` },
     });
 
-  console.log(
-    `seeded from ${SEED_FILE}\n  ${data.items.length} items · ${data.cpi.length} cpi · ${data.prices.length} prices`,
-  );
+  if (!quiet) {
+    console.log(
+      `seeded from ${SEED_FILE}\n  ${data.items.length} items · ${data.cpi.length} cpi · ${data.prices.length} prices`,
+    );
+  }
 }
 
-const mode = process.argv[2];
-try {
-  if (mode === "export") await exportSeed();
-  else if (mode === "import") await importSeed();
-  else {
-    console.error("usage: tsx src/seed.ts <export|import>");
-    process.exit(1);
-  }
-} finally {
-  await closeDb();
-}

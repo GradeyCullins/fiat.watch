@@ -5,16 +5,13 @@
   "private": true,
   "scripts": {
     "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts",
     "ingest": "tsx src/ingest/index.ts",
+    "export": "tsx src/export.ts",
+    "verify": "tsx src/verify.ts",
     "lint": "eslint",
     "format": "prettier --write \"**/*.ts\"",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "seed": "tsx src/seed.ts import",
-    "seed:export": "tsx src/seed.ts export",
-    "verify": "tsx src/verify.ts",
-    "setup": "pnpm migrate && pnpm seed"
+    "test": "vitest run"
   },
   "dependencies": {
     "@electric-sql/pglite": "catalog:",

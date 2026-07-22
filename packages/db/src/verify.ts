@@ -18,7 +18,7 @@ if (!oldDir) {
 }
 
 const read = (f: string) => JSON.parse(readFileSync(`${oldDir}/${f}`, "utf8"));
-const db = getDb();
+const db = await getDb();
 
 let problems = 0;
 const note = (s: string) => console.log(`  ${s}`);
