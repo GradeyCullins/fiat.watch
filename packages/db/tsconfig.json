@@ -1,0 +1,13 @@
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    // See packages/core/tsconfig.json — bundler resolution so the same source
+    // works under Turbopack, tsx and vitest without ".js" import suffixes.
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "lib": ["es2022"],
+    "types": ["node"]
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist", ".pglite"]
+}

@@ -1,0 +1,15 @@
+{
+  "extends": "@workspace/typescript-config/base.json",
+  "compilerOptions": {
+    // This package is consumed by Next/Turbopack as well as by Node (tsx,
+    // vitest). NodeNext would require explicit ".js" on every relative import,
+    // which Turbopack does not rewrite back to ".ts" for transpiled workspace
+    // packages — so it resolves at build time and 500s in the app.
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "lib": ["es2022"],
+    "types": ["node"]
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}
