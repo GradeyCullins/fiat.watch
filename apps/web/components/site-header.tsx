@@ -18,7 +18,6 @@ import {
   SheetTrigger,
 } from "@workspace/ui/components/sheet"
 
-import { ItemArt } from "@/components/item-art"
 import { LogoMark } from "@/components/logo"
 import { PriceTicker } from "@/components/price-ticker"
 import { SiteSearch } from "@/components/site-search"
@@ -26,7 +25,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { CALCULATORS } from "@/lib/calculators"
 import { getItems } from "@/lib/data"
 import { buildSearchIndex } from "@/lib/search"
-import { colorFor } from "@/lib/series"
+import { emojiFor } from "@/lib/emoji"
 
 function Wordmark() {
   return (
@@ -42,6 +41,12 @@ function Wordmark() {
 
 export async function SiteHeader() {
   const [items, index] = await Promise.all([getItems(), buildSearchIndex()])
+
+  // The nav is a shortcut, not the catalogue. /costs is the catalogue.
+  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "coffee", "bacon", "electricity"]
+  const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
+    (i): i is NonNullable<typeof i> => Boolean(i),
+  )
 
   return (
     <header className="bg-background/90 ruled sticky top-0 z-40 border-b backdrop-blur">
@@ -84,19 +89,19 @@ export async function SiteHeader() {
               <ChevronDownIcon className="size-3.5 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="ruled w-auto min-w-64 border">
-              {items.map((item) => (
+              {featured.map((item) => (
                 <DropdownMenuItem key={item.slug} render={<Link href={`/costs/${item.slug}`} />}>
-                  <ItemArt
-                    slug={item.slug}
-                    className="size-4"
-                    style={{ color: colorFor(item.slug) }}
-                  />
-                  {item.label}
+                  <span aria-hidden>{emojiFor(item.slug)}</span>
+                  <span className="first-letter:uppercase">{item.label}</span>
                   <span className="text-muted-foreground tnum ml-auto text-xs">
                     {item.firstYear}–{item.lastYear}
                   </span>
                 </DropdownMenuItem>
               ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem render={<Link href="/costs" />}>
+                All {items.length} items
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
@@ -132,16 +137,13 @@ export async function SiteHeader() {
                 ))}
               </MobileGroup>
               <MobileGroup title="Prices">
-                {items.map((item) => (
+                {featured.map((item) => (
                   <MobileLink key={item.slug} href={`/costs/${item.slug}`}>
-                    <ItemArt
-                      slug={item.slug}
-                      className="size-4"
-                      style={{ color: colorFor(item.slug) }}
-                    />
-                    {item.label}
+                    <span aria-hidden>{emojiFor(item.slug)}</span>
+                    <span className="first-letter:uppercase">{item.label}</span>
                   </MobileLink>
                 ))}
+                <MobileLink href="/costs">All {items.length} items →</MobileLink>
               </MobileGroup>
             </nav>
           </SheetContent>

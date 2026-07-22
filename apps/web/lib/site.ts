@@ -16,14 +16,31 @@ export function pageMetadata({
   title,
   description,
   path,
-  images,
+  image,
 }: {
   title: string
   description: string
   path: string
-  images?: Metadata["openGraph"] extends { images?: infer I } ? I : never
+  /** Route-specific card. Defaults to the site image. */
+  image?: string
 }): Metadata {
   const url = new URL(path, SITE.url).toString()
+
+  /*
+   * The default matters. This helper exists because metadata merge is shallow
+   * — a route that sets `openGraph` at all replaces the parent's object rather
+   * than merging into it — but it omitted `images`, so *every* page that used
+   * it dropped the root `opengraph-image.tsx` and shipped no card at all. The
+   * only page in the build that had one was the noindex 404.
+   */
+  const card = [
+    {
+      url: new URL(image ?? "/opengraph-image", SITE.url).toString(),
+      width: 1200,
+      height: 630,
+      alt: title,
+    },
+  ]
 
   return {
     title,
@@ -36,8 +53,11 @@ export function pageMetadata({
       title,
       description,
       url,
-      ...(images ? { images } : {}),
+      images: card,
     },
+    // `twitter.images` is filled from `openGraph.images` when omitted, so the
+    // separate twitter-image.tsx route was producing a byte-identical second
+    // copy of the same picture.
     twitter: {
       card: "summary_large_image",
       title,

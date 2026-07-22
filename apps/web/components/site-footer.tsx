@@ -5,6 +5,10 @@ import { getItems } from "@/lib/data"
 
 export async function SiteFooter() {
   const items = await getItems()
+  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "coffee", "bacon"]
+  const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
+    (i): i is NonNullable<typeof i> => Boolean(i),
+  )
 
   return (
     <footer className="ruled mt-12 border-t">
@@ -19,11 +23,16 @@ export async function SiteFooter() {
         </FooterColumn>
 
         <FooterColumn title="Prices">
-          {items.map((item) => (
+          {/* A sample. There are 160 items — the full list is /costs, and a
+              footer that enumerates a catalogue is not a footer. */}
+          {featured.map((item) => (
             <FooterLink key={item.slug} href={`/costs/${item.slug}`}>
               {item.label}
             </FooterLink>
           ))}
+          <FooterLink href="/costs">
+            <span className="text-foreground">All {items.length} items →</span>
+          </FooterLink>
         </FooterColumn>
 
         <FooterColumn title="Fiat Watch">

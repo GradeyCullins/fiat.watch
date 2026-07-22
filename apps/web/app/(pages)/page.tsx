@@ -5,10 +5,9 @@ import { convert, formatUsd } from "@workspace/core"
 
 import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
-import { ItemArt } from "@/components/item-art"
+import { CardRail, ItemCard } from "@/components/item-card"
 import { getAnnualCpiPoints } from "@/lib/cpi"
 import { getAnnual, getCpiTable, getItems } from "@/lib/data"
-import { colorFor } from "@/lib/series"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
 
 export const metadata = pageMetadata({
@@ -49,8 +48,18 @@ export default async function Page() {
   }).converted
   const cents = (1 / dollarNow) * 100
 
+  // A sample, not the catalogue. There are 160 items; the full list belongs
+  // on its own page, and a home page that lists everything is a directory.
+  const FEATURED = [
+    "gas", "eggs", "bread", "milk", "ground-beef", "coffee",
+    "bacon", "bananas", "chicken-breast", "butter", "electricity", "sugar",
+  ]
+  const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
+    (i): i is NonNullable<typeof i> => Boolean(i),
+  )
+
   const picker = await Promise.all(
-    items.map(async (item) => ({
+    featured.map(async (item) => ({
       item,
       latest: (await getAnnual(item.slug)).at(-1)?.value ?? 0,
     })),
@@ -76,9 +85,14 @@ export default async function Page() {
         <p className="text-eyebrow text-muted-foreground uppercase">
           CPI-U · {earliest}–{baseYear} · Bureau of Labor Statistics
         </p>
+        {/* The boxed figure, as on the first version of this page — the
+            highlight is what makes the number land, not just colouring it. */}
         <h1 className="font-display text-display mt-3 text-balance">
-          A {earliest} dollar buys{" "}
-          <span className="text-primary tnum">{cents.toFixed(0)}¢</span> of what it did.
+          A {earliest} dollar buys
+          <span className="bg-primary text-primary-foreground ruled tnum mx-2 inline-block -rotate-1 border-2 px-2.5 align-baseline">
+            {cents.toFixed(0)}¢
+          </span>
+          of what it did.
         </h1>
         <p className="text-muted-foreground mt-4 max-w-2xl text-base text-pretty">
           The same fact the other way round: it takes{" "}
@@ -110,31 +124,19 @@ export default async function Page() {
           </p>
         </div>
 
-        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <CardRail>
           {picker.map(({ item, latest }) => (
-            <li key={item.slug} className="bg-border">
-              <Link
+            <li key={item.slug}>
+              <ItemCard
+                slug={item.slug}
+                label={item.label}
+                meta={`${item.unit} · ${item.firstYear}–${item.lastYear}`}
+                value={formatUsd(latest)}
                 href={`/costs/${item.slug}`}
-                className="bg-card hover:bg-accent flex h-full flex-col gap-3 p-4 transition-colors"
-              >
-                <ItemArt
-                  slug={item.slug}
-                  className="size-8"
-                  style={{ color: colorFor(item.slug) }}
-                />
-                <span>
-                  <span className="font-display block font-bold">{item.label}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {item.unit} · {item.firstYear}–{item.lastYear}
-                  </span>
-                </span>
-                <span className="tnum mt-auto font-mono text-lg font-bold">
-                  {formatUsd(latest)}
-                </span>
-              </Link>
+              />
             </li>
           ))}
-        </ul>
+        </CardRail>
       </section>
     </main>
   )

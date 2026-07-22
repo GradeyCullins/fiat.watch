@@ -219,6 +219,26 @@
     border-color: var(--rule);
 }
 
+/* The nav ticker. One keyframe over a track that is duplicated in the markup,
+   so -50% lands exactly on the seam and the loop is invisible. */
+@keyframes marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+}
+
+@utility marquee {
+    animation: marquee 90s linear infinite;
+
+    &:hover {
+        animation-play-state: paused;
+    }
+
+    /* Motion for its own sake is the first thing to go. */
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
 /* Every number on this site is compared against another number. */
 @utility tnum {
     font-variant-numeric: tabular-nums;

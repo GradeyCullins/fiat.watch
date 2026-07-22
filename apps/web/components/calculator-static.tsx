@@ -35,27 +35,36 @@ export function CalculatorStatic({
   return (
     <div className="flex flex-col">
       <div className="ruled bg-card border p-4 sm:p-6">
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-3 text-lg sm:text-xl">
-          <span className="text-muted-foreground font-mono">$</span>
-          <span className="ruled tnum flex h-11 w-40 items-center border px-3 font-mono text-lg font-bold sm:text-xl">
-            {defaults.amount}
-          </span>
-          <span className="text-muted-foreground">in</span>
-          <span className="ruled tnum flex h-11 items-center border px-3 font-mono text-lg font-bold sm:text-xl">
-            {defaults.from}
-          </span>
-          <span className="text-muted-foreground">is worth</span>
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+          <div>
+            <p className="text-eyebrow text-muted-foreground mb-2 uppercase">Amount</p>
+            <p className="flex items-center gap-2">
+              <span className="text-muted-foreground font-mono text-lg">$</span>
+              <span className="ruled tnum flex h-11 w-40 items-center border px-3 font-mono text-lg font-bold sm:text-xl">
+                {defaults.amount}
+              </span>
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-eyebrow text-muted-foreground mb-2 uppercase">
+              is worth, in {defaults.to}
+            </p>
+            <p className="font-display tnum text-display leading-none">
+              {formatUsd(result.converted)}
+            </p>
+          </div>
+        </div>
 
-        <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-3">
-          <p className="font-display tnum text-display leading-none">
-            {formatUsd(result.converted)}
-          </p>
-          <div className="mb-1.5 flex items-center gap-3">
-            <span className="text-muted-foreground text-lg sm:text-xl">in</span>
-            <span className="ruled tnum flex h-11 items-center border px-3 font-mono text-lg font-bold sm:text-xl">
-              {defaults.to}
-            </span>
+        <div className="mt-7">
+          <div className="tnum text-muted-foreground mb-2 flex items-baseline justify-between font-mono text-sm">
+            <span className="text-foreground text-base font-bold">{defaults.from}</span>
+            <span className="text-eyebrow uppercase">{defaults.to - defaults.from} years</span>
+            <span className="text-foreground text-base font-bold">{defaults.to}</span>
+          </div>
+          {/* The slider's rail, drawn statically so the shape does not jump
+              when the interactive version hydrates over it. */}
+          <div className="bg-muted relative h-1.5 w-full">
+            <div className="bg-primary absolute inset-y-0 left-0 right-0" />
           </div>
         </div>
       </div>

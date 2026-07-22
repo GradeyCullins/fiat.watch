@@ -8,6 +8,7 @@ import { ItemArt } from "@/components/item-art"
 import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries } from "@/lib/data"
+import { hasMonthTier } from "@/lib/coverage"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -202,6 +203,10 @@ export default async function Page({
           focus={{ year }}
         />
       </div>
+          {/* Only the five legacy items have month pages — see lib/coverage.ts.
+              The monthly data is still on the chart above for every item; what
+              is gated here is linking to URLs that will not be built. */}
+          {hasMonthTier(slug) ? (
           <ul className="ruled mt-3 grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
             {months.map((point) => (
               <li key={point.month} className="bg-border">
@@ -217,6 +222,7 @@ export default async function Page({
               </li>
             ))}
           </ul>
+          ) : null}
         </section>
       ) : null}
 

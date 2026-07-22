@@ -8,6 +8,7 @@ import { ItemArt } from "@/components/item-art"
 import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries, getPriceKeys } from "@/lib/data"
+import { hasMonthTier } from "@/lib/coverage"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -18,11 +19,10 @@ const pad = (month: number) => String(month).padStart(2, "0")
 export async function generateStaticParams() {
   // Exactly the readings that exist. October 2025 was never collected, so it
   // never becomes a URL rather than becoming one that renders an empty page.
-  return (await getPriceKeys()).map((key) => ({
-    item: key.slug,
-    year: String(key.year),
-    month: pad(key.month),
-  }))
+  const keys = await getPriceKeys()
+  return keys
+    .filter((key) => hasMonthTier(key.slug))
+    .map((key) => ({ item: key.slug, year: String(key.year), month: pad(key.month) }))
 }
 
 async function load(slug: string, yearParam: string, monthParam: string) {

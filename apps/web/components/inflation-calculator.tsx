@@ -2,7 +2,15 @@
 
 import * as React from "react"
 import { parseAsFloat, parseAsInteger, useQueryStates } from "nuqs"
-import { Area, AreaChart, CartesianGrid, ReferenceDot, XAxis, YAxis } from "recharts"
+import {
+  Area,
+  AreaChart,
+  Brush,
+  CartesianGrid,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 import { convert, CpiTable, formatUsd, type CpiPoint } from "@workspace/core"
 import {
@@ -10,13 +18,6 @@ import {
   ChartTooltip,
   type ChartConfig,
 } from "@workspace/ui/components/chart"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@workspace/ui/components/select"
 import { cn } from "@workspace/ui/lib/utils"
 
 export interface CalculatorDefaults {
@@ -118,38 +119,60 @@ export function InflationCalculator({
     if (typed == null || !table.has(from)) return []
     return table.years.map((year) => ({
       year,
-      value: convert(table, { amount: typed, from: { year: from }, to: { year: year } }).converted,
+      value: convert(table, { amount: typed, from: { year: from }, to: { year } }).converted,
     }))
   }, [table, typed, from])
 
+  /*
+   * The two years are the chart's own selection, not a pair of controls beside
+   * it. `<Brush>` is recharts' range selector: drag either end across the
+   * century and the answer above follows. Two 114-option dropdowns asked the
+   * reader to do the comparison in their head; a span is the same shape as the
+   * question.
+   */
+  const indexOf = React.useCallback(
+    (year: number) => Math.max(0, table.years.indexOf(year)),
+    [table],
+  )
+  const onBrush = React.useCallback(
+    (range: { startIndex?: number; endIndex?: number }) => {
+      const a = table.years[range.startIndex ?? 0]
+      const b = table.years[range.endIndex ?? table.years.length - 1]
+      if (a == null || b == null || (a === from && b === to)) return
+      setState({ from: a, to: b })
+    },
+    [table, from, to, setState],
+  )
+
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="ruled bg-card border p-4 sm:p-6">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-3 text-lg sm:text-xl">
-          <span className="text-muted-foreground font-mono">$</span>
-          <input
-            inputMode="decimal"
-            value={raw}
-            onChange={(event) => {
-              setRaw(event.target.value)
-              const next = parseAmount(event.target.value)
-              if (next != null) setState({ amount: next })
-            }}
-            aria-label={`The ${noun} to convert`}
-            aria-invalid={typed == null}
-            className="ruled tnum focus-visible:border-ring h-11 w-40 border bg-transparent px-3 font-mono text-lg font-bold outline-hidden sm:text-xl"
-          />
-          <span className="text-muted-foreground">in</span>
-          <YearSelect
-            value={from}
-            onChange={(year) => setState({ from: year })}
-            years={years}
-            label="Original year"
-          />
-          <span className="text-muted-foreground">is worth</span>
+      <div className="ruled bg-card flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border p-4 sm:p-6">
+        <div>
+          <label
+            htmlFor="amount"
+            className="text-eyebrow text-muted-foreground mb-2 block uppercase"
+          >
+            {noun} in {from}
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground font-mono text-lg">$</span>
+            <input
+              id="amount"
+              inputMode="decimal"
+              value={raw}
+              onChange={(event) => {
+                setRaw(event.target.value)
+                const next = parseAmount(event.target.value)
+                if (next != null) setState({ amount: next })
+              }}
+              aria-invalid={typed == null}
+              className="ruled tnum focus-visible:border-ring h-11 w-40 border bg-transparent px-3 font-mono text-lg font-bold outline-hidden sm:text-xl"
+            />
+          </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-3">
+        <div className="text-right">
+          <p className="text-eyebrow text-muted-foreground mb-2 uppercase">is worth in {to}</p>
           <p
             className={cn(
               "font-display tnum text-display leading-none",
@@ -158,15 +181,6 @@ export function InflationCalculator({
           >
             {result ? formatUsd(result.converted) : "—"}
           </p>
-          <div className="mb-1.5 flex items-center gap-3">
-            <span className="text-muted-foreground text-lg sm:text-xl">in</span>
-            <YearSelect
-              value={to}
-              onChange={(year) => setState({ to: year })}
-              years={years}
-              label="Comparison year"
-            />
-          </div>
         </div>
       </div>
 
@@ -246,15 +260,19 @@ export function InflationCalculator({
               animationEasing="ease-out"
             />
             {result ? (
-              <ReferenceDot
-                x={to}
-                y={result.converted}
-                r={5}
-                fill="var(--chart-1)"
-                stroke="var(--card)"
-                strokeWidth={2}
-              />
+              <ReferenceLine x={to} stroke="var(--chart-1)" strokeDasharray="4 3" />
             ) : null}
+            <Brush
+              dataKey="year"
+              height={28}
+              travellerWidth={8}
+              startIndex={indexOf(from)}
+              endIndex={indexOf(to)}
+              onChange={onBrush}
+              stroke="var(--chart-1)"
+              fill="var(--card)"
+              ariaLabel="Year range"
+            />
           </AreaChart>
         </ChartContainer>
       ) : null}
@@ -290,32 +308,3 @@ function Stat({
   )
 }
 
-function YearSelect({
-  value,
-  onChange,
-  years,
-  label,
-}: {
-  value: number
-  onChange: (year: number) => void
-  years: readonly number[]
-  label: string
-}) {
-  return (
-    <Select value={String(value)} onValueChange={(next) => onChange(Number(next))}>
-      <SelectTrigger
-        aria-label={label}
-        className="ruled tnum h-11 border px-3 font-mono text-lg font-bold sm:text-xl"
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent className="ruled max-h-72 border">
-        {years.map((year) => (
-          <SelectItem key={year} value={String(year)} className="tnum font-mono">
-            {year}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
