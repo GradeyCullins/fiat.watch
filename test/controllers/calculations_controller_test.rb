@@ -31,6 +31,56 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     ].each do |path|
       assert_select "a[href=?]", path
     end
+    assert_select "section[aria-labelledby=?]", "news-feed-heading" do
+      assert_select "h2", text: "The money wire"
+      assert_select "p", text: "The wire is warming up."
+    end
+  end
+
+  test "root page renders the newest news articles" do
+    older = create_news_article(
+      headline: "Older inflation report",
+      url: "https://example.com/older",
+      published_at: 2.days.ago,
+      topics: [ "inflation" ]
+    )
+    newer = create_news_article(
+      headline: "Dollar moves after central bank decision",
+      url: "https://example.com/newer",
+      published_at: 1.hour.ago,
+      topics: [ "us_dollar", "monetary_policy" ]
+    )
+
+    get root_path
+
+    assert_response :success
+    assert_select "section[aria-labelledby=?]", "news-feed-heading" do
+      assert_select "li", count: 2
+      assert_select "li:first-child a[href=?][target=?][rel*=?]", newer.canonical_url, "_blank", "noopener"
+      assert_select "li:first-child h3", text: newer.headline
+      assert_select "li:last-child h3", text: older.headline
+      assert_select "time[datetime=?]", newer.published_at.iso8601
+      assert_select "span", text: "Us dollar"
+    end
+  end
+
+  test "root page limits the news feed to nine articles" do
+    10.times do |index|
+      create_news_article(
+        headline: "Wire item #{index}",
+        url: "https://example.com/wire-#{index}",
+        published_at: index.hours.ago,
+        topics: [ "forex" ]
+      )
+    end
+
+    get root_path
+
+    assert_select "section[aria-labelledby=?]", "news-feed-heading" do
+      assert_select "li", count: 9
+      assert_select "h3", text: "Wire item 0"
+      assert_select "h3", text: "Wire item 9", count: 0
+    end
   end
 
   test "successful calculation renders analytics event data and sponsor slot" do
@@ -56,5 +106,22 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[role=?]", "alert"
     assert_select "[data-analytics-event-name-value=?]", "calculation_completed", count: 0
     assert_select "aside[aria-label=?]", "Advertising", count: 0
+  end
+
+  private
+
+  def create_news_article(headline:, url:, published_at:, topics:)
+    NewsArticle.create!(
+      provider: "test_wire",
+      provider_identifier: url,
+      canonical_url: url,
+      headline: headline,
+      publisher: "Test Wire",
+      summary: "A concise market update.",
+      language: "en",
+      topics: topics,
+      published_at: published_at,
+      fetched_at: Time.current
+    )
   end
 end

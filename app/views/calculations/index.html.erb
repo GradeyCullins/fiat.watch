@@ -178,6 +178,10 @@
   </div>
 </section>
 
+<% if defined?(@news_articles) %>
+  <%= render "news_feed", articles: @news_articles %>
+<% end %>
+
 <section class="mx-auto mt-20 max-w-3xl px-5 text-lg font-semibold leading-relaxed text-[#0a0a0a] sm:px-8">
   <h2 class="mb-4 mt-10 font-display text-4xl font-black text-[#cc0000]">How the Fiat Watch inflation calculator works</h2>
   <p class="mt-4">

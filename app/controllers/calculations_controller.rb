@@ -7,6 +7,7 @@ class CalculationsController < ApplicationController
     @from_year = params[:from_year].presence&.to_i || default_from_year
     @to_year = params[:to_year].presence&.to_i || CpiCalculator.latest_year
     @result = compute_result if @amount.present?
+    @news_articles = NewsArticle.recent_first.limit(9)
     set_seo_for_index
   end
 
