@@ -16,8 +16,7 @@ import {
 import { Kbd, KbdGroup } from "@workspace/ui/components/kbd"
 import { cn } from "@workspace/ui/lib/utils"
 
-import { ItemArt, hasArt } from "@/components/item-art"
-import { colorFor } from "@/lib/series"
+import { emojiFor } from "@/lib/emoji"
 import type { SearchEntry } from "@/lib/search"
 
 /**
@@ -139,12 +138,10 @@ export function SiteSearch({
                     value={`${row.label} ${row.keywords ?? ""}`}
                     onSelect={() => go(row.href)}
                   >
-                    {row.slug && hasArt(row.slug) ? (
-                      <ItemArt
-                        slug={row.slug}
-                        className="size-4"
-                        style={{ color: colorFor(row.slug) }}
-                      />
+                    {row.slug ? (
+                      <span aria-hidden className="grid size-4 place-items-center">
+                        {emojiFor(row.slug)}
+                      </span>
                     ) : null}
                     <span className="truncate">{row.label}</span>
                     {row.hint ? (

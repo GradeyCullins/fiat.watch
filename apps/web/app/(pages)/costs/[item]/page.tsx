@@ -3,11 +3,11 @@ import { notFound } from "next/navigation"
 
 import { convert, formatUsd } from "@workspace/core"
 
-import { ItemArt } from "@/components/item-art"
 import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems, getMonthlySeries } from "@/lib/data"
 import { itemStats } from "@/lib/item-stats"
+import { emojiFor } from "@/lib/emoji"
 import { colorFor } from "@/lib/series"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
 
@@ -84,12 +84,19 @@ export default async function Page({ params }: { params: Promise<{ item: string 
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <ItemArt slug={slug} className="size-9 shrink-0" style={{ color }} />
+        <span aria-hidden className="bg-muted/70 grid size-11 shrink-0 place-items-center rounded-full text-2xl">
+          {emojiFor(slug)}
+        </span>
         <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
           Historical {item.labelAttributive} prices by year
         </h1>
+        {/* "606 monthly readings" was a row count, not a fact anyone wants.
+            What matters is the unit, the span, and whether it still runs. */}
         <p className="text-muted-foreground text-eyebrow w-full uppercase sm:w-auto">
-          {item.unit} · {item.firstYear}–{item.lastYear} · {item.observations} monthly readings
+          {item.unit} ·{" "}
+          {item.isDiscontinued
+            ? `${item.firstYear}–${item.lastYear}, no longer tracked`
+            : `every month since ${item.firstYear}`}
         </p>
       </div>
 
@@ -168,11 +175,7 @@ export default async function Page({ params }: { params: Promise<{ item: string 
                   href={`/costs/${other.slug}`}
                   className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
-                  <ItemArt
-                    slug={other.slug}
-                    className="size-5"
-                    style={{ color: colorFor(other.slug) }}
-                  />
+                  <span aria-hidden className="size-5 grid place-items-center">{emojiFor(other.slug)}</span>
                   <span className="text-sm font-medium">{other.label}</span>
                   <span className="text-muted-foreground tnum ml-auto font-mono text-xs">
                     {other.firstYear}–{other.lastYear}

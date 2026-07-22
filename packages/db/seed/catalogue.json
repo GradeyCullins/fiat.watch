@@ -413,8 +413,8 @@
   {
    "itemCode": "702111",
    "slug": "bread",
-   "label": "white bread",
-   "labelAttributive": "white bread",
+   "label": "bread",
+   "labelAttributive": "bread",
    "unit": "per pound",
    "category": "grains",
    "group": "bread",
@@ -753,8 +753,8 @@
   {
    "itemCode": "74714",
    "slug": "gas",
-   "label": "regular unleaded gasoline",
-   "labelAttributive": "regular gas",
+   "label": "gas",
+   "labelAttributive": "gas",
    "unit": "per gallon",
    "category": "energy",
    "group": "gasoline",
@@ -943,8 +943,8 @@
   {
    "itemCode": "709112",
    "slug": "milk",
-   "label": "whole milk",
-   "labelAttributive": "whole milk",
+   "label": "milk",
+   "labelAttributive": "milk",
    "unit": "per gallon",
    "category": "dairy",
    "group": "milk",
@@ -1333,7 +1333,7 @@
   {
    "itemCode": "708111",
    "slug": "eggs",
-   "label": "large grade A eggs",
+   "label": "eggs",
    "labelAttributive": "egg",
    "unit": "per dozen",
    "category": "dairy",

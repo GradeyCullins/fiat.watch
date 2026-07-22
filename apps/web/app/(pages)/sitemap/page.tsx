@@ -1,10 +1,9 @@
 import Link from "next/link"
 
-import { ItemArt } from "@/components/item-art"
 import { Crumbs, Shell } from "@/components/page-shell"
 import { CALCULATORS } from "@/lib/calculators"
 import { getAnnual, getItems, getPriceKeys } from "@/lib/data"
-import { colorFor } from "@/lib/series"
+import { emojiFor } from "@/lib/emoji"
 import { pageMetadata } from "@/lib/site"
 
 export const metadata = pageMetadata({
@@ -49,7 +48,7 @@ export default async function Page() {
       {perItem.map(({ item, rows }) => (
         <Section key={item.slug} title={`Historical ${item.labelAttributive} prices`}>
           <div className="mb-3 flex items-center gap-2">
-            <ItemArt slug={item.slug} className="size-5" style={{ color: colorFor(item.slug) }} />
+            <span aria-hidden className="size-5 grid place-items-center">{emojiFor(item.slug)}</span>
             <Link
               href={`/costs/${item.slug}`}
               className="text-sm font-medium underline underline-offset-4"

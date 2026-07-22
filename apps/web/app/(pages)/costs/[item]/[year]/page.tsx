@@ -4,11 +4,11 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 
 import { convert, formatUsd } from "@workspace/core"
 
-import { ItemArt } from "@/components/item-art"
 import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries } from "@/lib/data"
 import { hasMonthTier } from "@/lib/coverage"
+import { emojiFor } from "@/lib/emoji"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -131,7 +131,9 @@ export default async function Page({
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <ItemArt slug={slug} className="size-9 shrink-0" style={{ color }} />
+        <span aria-hidden className="bg-muted/70 grid size-11 shrink-0 place-items-center rounded-full text-2xl">
+          {emojiFor(slug)}
+        </span>
         <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
           How much did {item.label} cost in {year}?
         </h1>
@@ -236,7 +238,7 @@ export default async function Page({
             <li key={other.slug} className="bg-border">
               {value == null ? (
                 <span className="bg-card text-muted-foreground flex h-full items-center gap-2.5 px-3 py-2.5 text-sm">
-                  <ItemArt slug={other.slug} className="size-5 opacity-40" />
+                  <span aria-hidden className="size-5 opacity-40 grid place-items-center">{emojiFor(other.slug)}</span>
                   {other.label} — no data
                 </span>
               ) : (
@@ -244,11 +246,7 @@ export default async function Page({
                   href={`/costs/${other.slug}/${year}`}
                   className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
-                  <ItemArt
-                    slug={other.slug}
-                    className="size-5"
-                    style={{ color: colorFor(other.slug) }}
-                  />
+                  <span aria-hidden className="size-5 grid place-items-center">{emojiFor(other.slug)}</span>
                   <span className="text-sm font-medium">{other.label}</span>
                   <span className="tnum ml-auto font-mono text-sm font-semibold">
                     {formatUsd(value)}

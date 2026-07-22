@@ -6,12 +6,11 @@ import { formatUsd } from "@workspace/core"
 
 import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
-import { ItemArt } from "@/components/item-art"
 import { Crumbs, Shell } from "@/components/page-shell"
 import { CALCULATORS, type CalculatorPage } from "@/lib/calculators"
 import { getAnnualCpiPoints } from "@/lib/cpi"
 import { getAnnual, getItems } from "@/lib/data"
-import { colorFor } from "@/lib/series"
+import { emojiFor } from "@/lib/emoji"
 import { pageMetadata } from "@/lib/site"
 
 /** Only these seven slugs exist; anything else is a static 404. */
@@ -98,11 +97,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
                   href={`/costs/${item.slug}`}
                   className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
                 >
-                  <ItemArt
-                    slug={item.slug}
-                    className="size-5"
-                    style={{ color: colorFor(item.slug) }}
-                  />
+                  <span aria-hidden className="size-5 grid place-items-center">{emojiFor(item.slug)}</span>
                   <span className="text-sm font-medium">{item.label}</span>
                   <span className="tnum ml-auto font-mono text-sm font-semibold">
                     {formatUsd(price)}
