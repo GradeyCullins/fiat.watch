@@ -23,6 +23,23 @@ export interface Crumb {
  * hierarchy and zero BreadcrumbList markup on any of it.
  */
 export function Crumbs({ trail }: { trail: Crumb[] }) {
+  /*
+   * Drop any crumb that resolves to the same URL as the one before it.
+   *
+   * Several trails pointed a middle level at "/" because the section it named
+   * had no index page yet, which emitted the same URL at positions 1 and 2 —
+   * a malformed BreadcrumbList, and two adjacent visible links going to the
+   * same place. Guarding here rather than at each call site means a future
+   * trail cannot reintroduce it.
+   */
+  const seen = new Set<string>()
+  trail = trail.filter((crumb, i) => {
+    if (!crumb.href) return true
+    if (seen.has(crumb.href) && i > 0) return false
+    seen.add(crumb.href)
+    return true
+  })
+
   return (
     <>
       <script

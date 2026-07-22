@@ -51,7 +51,6 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
-          { label: "Calculators", href: "/" },
           { label: page.heading },
         ]}
       />

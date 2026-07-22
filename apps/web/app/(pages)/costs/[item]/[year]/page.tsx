@@ -124,6 +124,7 @@ export default async function Page({
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
+          { label: "Prices", href: "/costs" },
           { label: item.label, href: `/costs/${slug}` },
           { label: String(year) },
         ]}
