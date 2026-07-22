@@ -1,6 +1,6 @@
 require "json"
 
-class CpiCalculator
+class CpiCalculator < ApplicationService
   DATA_PATH = Rails.root.join("db", "cpi_data.json")
 
   class Error < StandardError; end
@@ -84,6 +84,18 @@ class CpiCalculator
     def load_data
       JSON.parse(File.read(DATA_PATH))
     end
+  end
+
+  def initialize(amount:, from_year:, to_year:)
+    @amount = amount
+    @from_year = from_year
+    @to_year = to_year
+  end
+
+  def call
+    success(self.class.convert(amount: @amount, from_year: @from_year, to_year: @to_year))
+  rescue Error => error
+    failure(code: error.class.name.demodulize.underscore, message: error.message)
   end
 
   Result = Data.define(:amount, :from_year, :to_year, :from_cpi, :to_cpi, :converted) do

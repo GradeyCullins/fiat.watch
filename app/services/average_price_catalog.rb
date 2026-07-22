@@ -1,6 +1,6 @@
 require "json"
 
-class AveragePriceCatalog
+class AveragePriceCatalog < ApplicationService
   DATA_PATH = Rails.root.join("db", "average_price_data.json")
 
   Item = Data.define(:slug, :name, :item_name, :question_name, :unit, :series_id, :series_name, :years) do
@@ -68,5 +68,15 @@ class AveragePriceCatalog
     def items
       data.fetch("items")
     end
+  end
+
+  def initialize(slug:, year:)
+    @slug = slug
+    @year = year
+  end
+
+  def call
+    match = self.class.find_price(slug: @slug, year: @year)
+    match ? success(match) : failure(code: :price_not_found, message: "No annual price found")
   end
 end
