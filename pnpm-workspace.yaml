@@ -1,57 +1,97 @@
+# pnpm workspace configuration.
+# Docs: https://pnpm.io/catalogs · https://pnpm.io/settings
+
 packages:
   - "apps/*"
   - "packages/*"
 
+# `pnpm add <pkg>` puts the version in the catalog below and writes "catalog:"
+# into the manifest, so a literal range can never re-enter a package.json by
+# accident. (v10.12.1+; default is "manual", which does neither.)
+catalogMode: strict
+
+# Prune catalog entries once nothing references them, so this file cannot
+# accumulate versions for packages that were removed. (v10.15.0+)
+cleanupUnusedCatalogs: true
+
+# Postinstall scripts are denied unless listed here.
 allowBuilds:
   sharp: true
   unrs-resolver: true
   msw: false
-  # vitest and drizzle-kit both bundle through esbuild; its postinstall links
-  # the platform binary, so without this they fail at run time rather than here.
+  # vitest and drizzle-kit both bundle through esbuild, whose postinstall links
+  # the platform binary — without this they fail at run time rather than here.
   esbuild: true
 
-# One version per dependency for the whole workspace. Packages say
-# "catalog:" and never a literal range; `pnpm update` writes new
-# specifiers back into this block.
+# ---------------------------------------------------------------------------
+# The default catalog: one version per dependency, for every workspace.
+#
+# Packages reference these as "catalog:" and never a literal range, so a
+# version is declared exactly once and `pnpm update` writes new specifiers
+# back here rather than into seven manifests.
+#
+# Named `catalogs:` are deliberately not used. Those exist for workspaces that
+# need *different* versions of the same package side by side (pnpm's own
+# example is react17 vs react18). We want the opposite — one version
+# everywhere — which is precisely what the default catalog gives.
+# ---------------------------------------------------------------------------
 catalog:
+  # --- framework -----------------------------------------------------------
+  next: 16.2.6
+  react: 19.2.4
+  react-dom: 19.2.4
+
+  # --- ui ------------------------------------------------------------------
+  # Base UI is the primitive layer under shadcn (the default since July 2026).
   "@base-ui/react": ^1.6.0
-  "@electric-sql/pglite": ^0.5.4
-  "@eslint/js": ^9
-  "@next/eslint-plugin-next": ^16.2.6
-  "@tailwindcss/postcss": ^4
-  "@turbo/gen": ^2.9.15
-  "@types/node": ^20
-  "@types/react": ^19
-  "@types/react-dom": ^19
-  "@typescript-eslint/eslint-plugin": ^8.60.0
-  "@typescript-eslint/parser": ^8.60.0
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
   cmdk: ^1.1.1
-  drizzle-kit: ^0.31.10
+  lucide-react: ^1.25.0
+  next-themes: ^0.4.6
+  shadcn: ^4.13.1
+  tailwind-merge: ^3.6.0
+  tw-animate-css: ^1.4.0
+
+  # --- styling -------------------------------------------------------------
+  tailwindcss: ^4
+  "@tailwindcss/postcss": ^4
+
+  # --- charts --------------------------------------------------------------
+  # Pinned exact: shadcn's chart component is built and tested against this
+  # version, and npm latest has moved ahead of the registry.
+  recharts: 3.8.0
+
+  # --- data ----------------------------------------------------------------
   drizzle-orm: ^0.45.2
+  drizzle-kit: ^0.31.10
+  "@electric-sql/pglite": ^0.5.4
+  zod: ^4.4.3
+
+  # --- tooling -------------------------------------------------------------
+  typescript: ^5
+  tsx: ^4.23.1
+  turbo: ^2.9.18
+  "@turbo/gen": ^2.9.15
+  vitest: ^4.1.10
+  prettier: ^3.8.3
+  prettier-plugin-tailwindcss: ^0.8.0
+
+  # --- types ---------------------------------------------------------------
+  "@types/node": ^20
+  "@types/react": ^19
+  "@types/react-dom": ^19
+
+  # --- lint ----------------------------------------------------------------
   eslint: ^9
+  "@eslint/js": ^9
+  "@next/eslint-plugin-next": ^16.2.6
+  "@typescript-eslint/eslint-plugin": ^8.60.0
+  "@typescript-eslint/parser": ^8.60.0
+  typescript-eslint: ^8.60.0
   eslint-config-prettier: ^10.1.8
   eslint-plugin-only-warn: ^1.2.1
   eslint-plugin-react: ^7.37.5
   eslint-plugin-react-hooks: ^7.1.1
   eslint-plugin-turbo: ^2.9.15
   globals: ^17.6.0
-  lucide-react: ^1.25.0
-  next: 16.2.6
-  next-themes: ^0.4.6
-  prettier: ^3.8.3
-  prettier-plugin-tailwindcss: ^0.8.0
-  react: 19.2.4
-  react-dom: 19.2.4
-  recharts: 3.8.0
-  shadcn: ^4.13.1
-  tailwind-merge: ^3.6.0
-  tailwindcss: ^4
-  tsx: ^4.23.1
-  turbo: ^2.9.18
-  tw-animate-css: ^1.4.0
-  typescript: ^5
-  typescript-eslint: ^8.60.0
-  vitest: ^4.1.10
-  zod: ^4.4.3
