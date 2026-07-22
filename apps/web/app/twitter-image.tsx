@@ -4,14 +4,14 @@ export const alt = "Fiat Watch — what your money was really worth"
 export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
-const INK = "#211f1c"
-const PAPER = "#f6f3e7"
-const ACID = "#e8e34a"
+const INK = "#16191f"
+const PAPER = "#f4f8f5"
+const GREEN = "#2f7d55"
 
 /**
  * Drawn with plain divs and inline styles: `next/og` runs Satori, which
- * supports flexbox and little else — no CSS variables, no Tailwind classes, no
- * `gap` shorthand quirks. The palette is duplicated as hex here on purpose.
+ * supports flexbox and little else — no CSS variables, no Tailwind classes.
+ * The palette is duplicated as hex here on purpose.
  */
 export default function TwitterImage() {
   return new ImageResponse(
@@ -23,28 +23,25 @@ export default function TwitterImage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          background: PAPER,
-          color: INK,
+          background: INK,
+          color: PAPER,
           padding: 64,
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center" }}>
-          <div
-            style={{
-              display: "flex",
-              background: ACID,
-              border: `4px solid ${INK}`,
-              padding: "6px 14px",
-              fontSize: 34,
-              fontWeight: 800,
-              letterSpacing: -1,
-            }}
-          >
-            FIAT
-          </div>
-          <div style={{ display: "flex", marginLeft: 14, fontSize: 34, fontWeight: 800 }}>
-            WATCH
+          <svg width="52" height="52" viewBox="0 0 32 32" fill="none">
+            <path
+              d="M2 7 L10 25 L16 12 L22 25 L30 7"
+              stroke={GREEN}
+              strokeWidth="3.4"
+              strokeLinecap="square"
+              strokeLinejoin="miter"
+            />
+            <circle cx="16" cy="19.5" r="2.3" fill={GREEN} />
+          </svg>
+          <div style={{ display: "flex", marginLeft: 16, fontSize: 34, fontWeight: 800 }}>
+            FIAT WATCH
           </div>
         </div>
 
@@ -60,7 +57,7 @@ export default function TwitterImage() {
           >
             What your money
           </div>
-          <div style={{ display: "flex", alignItems: "center", marginTop: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
             <div
               style={{
                 display: "flex",
@@ -75,29 +72,15 @@ export default function TwitterImage() {
             <div
               style={{
                 display: "flex",
-                background: ACID,
-                border: `5px solid ${INK}`,
-                marginLeft: 18,
-                padding: "0 16px 10px",
+                color: GREEN,
+                marginLeft: 22,
                 fontSize: 104,
                 fontWeight: 800,
                 letterSpacing: -4,
                 lineHeight: 1,
               }}
             >
-              really
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 104,
-                fontWeight: 800,
-                letterSpacing: -4,
-                lineHeight: 1,
-                marginLeft: 18,
-              }}
-            >
-              worth.
+              really worth.
             </div>
           </div>
         </div>
@@ -106,9 +89,10 @@ export default function TwitterImage() {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            borderTop: `4px solid ${INK}`,
-            paddingTop: 20,
+            borderTop: `2px solid ${GREEN}`,
+            paddingTop: 22,
             fontSize: 26,
+            color: "#9aa0a8",
           }}
         >
           <div style={{ display: "flex" }}>US consumer prices since 1913</div>

@@ -29,6 +29,27 @@ const CHART_CONFIG = {
   value: { label: "Equivalent value", color: "var(--chart-1)" },
 } satisfies ChartConfig
 
+/**
+ * True only for the first paint of a session, and never when the visitor has
+ * asked for reduced motion.
+ *
+ * A chart that redraws itself on every navigation is charming once and
+ * irritating by the third time, so the flag is spent as soon as it is read.
+ */
+function useDrawIn(enabled: boolean) {
+  const [draw, setDraw] = React.useState(false)
+
+  React.useEffect(() => {
+    if (!enabled) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (sessionStorage.getItem("fw:drawn")) return
+    sessionStorage.setItem("fw:drawn", "1")
+    setDraw(true)
+  }, [enabled])
+
+  return draw
+}
+
 /** Accepts "45,000", "$45,000", "45000.50". Rejects anything else. */
 function parseAmount(raw: string): number | null {
   const cleaned = raw.replace(/[$,\s]/g, "")
@@ -41,13 +62,17 @@ export function InflationCalculator({
   points,
   defaults,
   noun = "amount",
+  /** Draw the line in on first paint. Home page only. */
+  animate = false,
   className,
 }: {
   points: CpiPoint[]
   defaults: CalculatorDefaults
   noun?: string
+  animate?: boolean
   className?: string
 }) {
+  const drawIn = useDrawIn(animate)
   const table = React.useMemo(() => new CpiTable(points), [points])
   const years = React.useMemo(() => [...table.years].reverse(), [table])
 
@@ -156,7 +181,7 @@ export function InflationCalculator({
           <Stat
             label="Multiple"
             value={`${result.inflationFactor.toFixed(2)}×`}
-            note={`A ${from} dollar buys ${formatUsd(result.inflationFactor)} of ${to}`}
+            note={`A ${from} dollar buys what ${formatUsd(result.inflationFactor)} buys in ${to}`}
           />
           <Stat
             label="CPI-U"
@@ -216,7 +241,9 @@ export function InflationCalculator({
               stroke="var(--chart-1)"
               strokeWidth={2}
               fill="url(#calc-fill)"
-              isAnimationActive={false}
+              isAnimationActive={drawIn}
+              animationDuration={1400}
+              animationEasing="ease-out"
             />
             {result ? (
               <ReferenceDot

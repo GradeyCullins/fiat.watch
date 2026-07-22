@@ -51,7 +51,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
       <Crumbs
         trail={[
           { label: "Fiat Watch", href: "/" },
-          { label: "Calculators", href: "/calculator" },
+          { label: "Calculators", href: "/" },
           { label: page.heading },
         ]}
       />
@@ -120,7 +120,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
         <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
           <li className="bg-border">
             <Link
-              href="/calculator"
+              href="/"
               className="bg-card hover:bg-accent block h-full px-3 py-2.5 text-sm font-medium transition-colors"
             >
               Any amount

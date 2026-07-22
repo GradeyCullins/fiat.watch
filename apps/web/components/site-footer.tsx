@@ -10,7 +10,7 @@ export async function SiteFooter() {
     <footer className="ruled mt-12 border-t">
       <div className="mx-auto grid w-full max-w-[1800px] gap-8 px-4 py-8 sm:grid-cols-3 sm:px-6 xl:px-10">
         <FooterColumn title="Calculators">
-          <FooterLink href="/calculator">Inflation calculator</FooterLink>
+          <FooterLink href="/">Inflation calculator</FooterLink>
           {CALCULATORS.map((c) => (
             <FooterLink key={c.slug} href={c.path}>
               {c.heading.replace(" inflation calculator", "")}
@@ -27,7 +27,6 @@ export async function SiteFooter() {
         </FooterColumn>
 
         <FooterColumn title="Fiat Watch">
-          <FooterLink href="/">Compare prices</FooterLink>
           {/* Linked deliberately — the HTML sitemap was orphaned on the old site. */}
           <FooterLink href="/sitemap">Every page</FooterLink>
         </FooterColumn>

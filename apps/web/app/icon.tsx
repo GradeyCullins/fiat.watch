@@ -4,11 +4,11 @@ export const size = { width: 512, height: 512 }
 export const contentType = "image/png"
 
 /**
- * The mark: an acid square with a falling line through it. Drawn rather than
- * shipped as a raster so it stays crisp and stays in the palette.
+ * The mark on a solid tile — a thin stroke alone disappears in a browser tab,
+ * so the tile carries the colour and the stroke stays paper-white.
  *
- * A literal `favicon.ico` cannot be generated this way — browsers that demand
- * one fall back to this PNG, which every current browser accepts.
+ * A literal `favicon.ico` cannot be generated this way. Every current browser
+ * accepts this PNG instead.
  */
 export default function Icon() {
   return new ImageResponse(
@@ -20,18 +20,18 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#e8e34a",
+          background: "#1f6b47",
         }}
       >
-        <svg width="512" height="512" viewBox="0 0 512 512" fill="none">
+        <svg width="360" height="360" viewBox="0 0 32 32" fill="none">
           <path
-            d="M64 128 L192 288 L288 208 L448 384"
-            stroke="#211f1c"
-            strokeWidth="56"
+            d="M2 7 L10 25 L16 12 L22 25 L30 7"
+            stroke="#f4f8f5"
+            strokeWidth="3.4"
             strokeLinecap="square"
             strokeLinejoin="miter"
           />
-          <path d="M448 288 L448 384 L352 384" stroke="#211f1c" strokeWidth="56" fill="none" />
+          <circle cx="16" cy="19.5" r="2.3" fill="#f4f8f5" />
         </svg>
       </div>
     ),

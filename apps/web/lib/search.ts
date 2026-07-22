@@ -28,16 +28,10 @@ export const buildSearchIndex = cache(async (): Promise<SearchEntry[]> => {
   const entries: SearchEntry[] = [
     {
       group: "Tools",
-      label: "Compare prices",
-      href: "/",
-      keywords: "chart home graph compare items",
-      hint: "Home",
-    },
-    {
-      group: "Tools",
       label: "Inflation calculator",
-      href: "/calculator",
-      keywords: "cpi convert dollars purchasing power",
+      href: "/",
+      keywords: "cpi convert dollars purchasing power compare chart home",
+      hint: "Home",
     },
     ...CALCULATORS.map((c) => ({
       group: "Calculators",

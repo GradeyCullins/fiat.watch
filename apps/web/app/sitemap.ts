@@ -18,7 +18,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = [
     { url: abs("/"), priority: 1, changeFrequency: "monthly" },
-    { url: abs("/calculator"), priority: 0.9, changeFrequency: "monthly" },
     { url: abs("/sitemap"), priority: 0.2, changeFrequency: "monthly" },
     ...CALCULATORS.map((c) => ({
       url: abs(c.path),

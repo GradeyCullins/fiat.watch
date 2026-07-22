@@ -19,6 +19,7 @@ import {
 } from "@workspace/ui/components/sheet"
 
 import { ItemArt } from "@/components/item-art"
+import { LogoMark } from "@/components/logo"
 import { PriceTicker } from "@/components/price-ticker"
 import { SiteSearch } from "@/components/site-search"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -31,11 +32,9 @@ function Wordmark() {
   return (
     <Link
       href="/"
-      className="flex shrink-0 items-center gap-2 font-display text-base leading-none font-extrabold tracking-tight"
+      className="font-display flex shrink-0 items-center gap-2 text-base leading-none font-extrabold tracking-tight"
     >
-      <span className="bg-primary text-primary-foreground grid size-7 place-items-center text-sm">
-        $
-      </span>
+      <LogoMark className="text-primary size-7" />
       <span className="hidden sm:inline">FIAT WATCH</span>
     </Link>
   )
@@ -64,7 +63,7 @@ export async function SiteHeader() {
               <ChevronDownIcon className="size-3.5 opacity-60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="ruled w-auto min-w-64 border">
-              <DropdownMenuItem render={<Link href="/calculator" />}>
+              <DropdownMenuItem render={<Link href="/" />}>
                 Inflation calculator
                 <span className="text-muted-foreground ml-auto text-xs">Any amount</span>
               </DropdownMenuItem>
@@ -125,7 +124,7 @@ export async function SiteHeader() {
             </SheetHeader>
             <nav className="flex flex-col gap-6 overflow-y-auto px-4 pb-8">
               <MobileGroup title="Calculators">
-                <MobileLink href="/calculator">Inflation calculator</MobileLink>
+                <MobileLink href="/">Inflation calculator</MobileLink>
                 {CALCULATORS.map((c) => (
                   <MobileLink key={c.slug} href={c.path}>
                     {c.heading.replace(" inflation calculator", "")}

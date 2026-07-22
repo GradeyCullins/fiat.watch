@@ -11,7 +11,9 @@ const nextConfig: NextConfig = {
     return [
       // `/calculation?amount=…` rendered the homepage verbatim. Sixteen of
       // those URLs are the exact set Google reported as duplicates of `/`.
-      { source: "/calculation", destination: "/calculator", permanent: true },
+      { source: "/calculation", destination: "/", permanent: true },
+      // `/calculator` was mine, not Rails'. It duplicated `/`, so it is gone.
+      { source: "/calculator", destination: "/", permanent: true },
     ]
     // www → apex is deliberately not here: it belongs to the domain
     // configuration, and doing it in a proxy would put an edge function in

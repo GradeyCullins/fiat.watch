@@ -37,8 +37,7 @@ export default async function Page() {
 
       <Section title="Tools">
         <ul className="flex flex-wrap gap-2">
-          <SitemapLink href="/">Compare prices</SitemapLink>
-          <SitemapLink href="/calculator">Inflation calculator</SitemapLink>
+          <SitemapLink href="/">Inflation calculator</SitemapLink>
           {CALCULATORS.map((c) => (
             <SitemapLink key={c.slug} href={c.path}>
               {c.heading}

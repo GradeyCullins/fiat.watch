@@ -41,8 +41,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f3e7" },
-    { media: "(prefers-color-scheme: dark)", color: "#211f1c" },
+    { media: "(prefers-color-scheme: light)", color: "#f4f8f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#16191f" },
   ],
   colorScheme: "light dark",
 }
@@ -65,8 +65,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <TooltipProvider>
               <SiteHeader />
-              {/* The footer lives in the (pages) group, not here: the home page
-                  is sized to fill the viewport exactly and must not scroll. */}
               <div className="flex flex-1 flex-col">{children}</div>
             </TooltipProvider>
           </ThemeProvider>

@@ -1,9 +1,8 @@
 import { SiteFooter } from "@/components/site-footer"
 
 /**
- * Everything except the home page. The home page sits outside this group
- * because it is sized to the viewport exactly and must not scroll — a footer
- * under it would defeat that.
+ * Every page, including the home page. The group exists only so the footer is
+ * declared once; route groups do not appear in the URL.
  */
 export default function PagesLayout({ children }: { children: React.ReactNode }) {
   return (
