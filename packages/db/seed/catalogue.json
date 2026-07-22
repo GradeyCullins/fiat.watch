@@ -202,7 +202,7 @@
   },
   {
    "itemCode": "712112",
-   "slug": "white-potatoes-per-lb",
+   "slug": "potatoes",
    "label": "white potatoes",
    "labelAttributive": "white potato",
    "unit": "per pound",
@@ -1392,7 +1392,7 @@
   },
   {
    "itemCode": "712111",
-   "slug": "white-potatoes-potatoes-white-cost-per",
+   "slug": "white-potatoes",
    "label": "white potatoes",
    "labelAttributive": "white potato",
    "unit": "per pound",

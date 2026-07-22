@@ -1,11 +1,13 @@
 import Link from "next/link"
 
 import { CALCULATORS } from "@/lib/calculators"
+import { assertSlugsExist } from "@/lib/coverage"
 import { getItems } from "@/lib/data"
 
 export async function SiteFooter() {
   const items = await getItems()
-  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "coffee", "bacon"]
+  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "ground-coffee", "bacon"]
+  assertSlugsExist("site footer", FEATURED, new Set(items.map((i) => i.slug)))
   const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
     (i): i is NonNullable<typeof i> => Boolean(i),
   )

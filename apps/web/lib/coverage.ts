@@ -15,3 +15,18 @@ export const MONTH_TIER_ITEMS = new Set(["gas", "eggs", "bread", "milk", "ground
 
 /** Year pages exist for every item — 12 readings each is real content. */
 export const hasMonthTier = (slug: string) => MONTH_TIER_ITEMS.has(slug)
+
+/**
+ * A build-time assertion that the curated lists still point at real items.
+ *
+ * Every hand-written slug list on this site — the ticker, the home picker, the
+ * nav — silently drops anything it cannot find, so a renamed slug shows up as
+ * a shorter row rather than an error. Three of the ticker's fourteen entries
+ * were dead before anyone noticed.
+ */
+export function assertSlugsExist(label: string, wanted: string[], available: Set<string>) {
+  const missing = wanted.filter((slug) => !available.has(slug))
+  if (missing.length) {
+    throw new Error(`${label}: unknown item slug(s) — ${missing.join(", ")}`)
+  }
+}

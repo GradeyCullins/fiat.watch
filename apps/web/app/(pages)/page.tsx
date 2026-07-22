@@ -6,6 +6,7 @@ import { convert, formatUsd } from "@workspace/core"
 import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
 import { CardRail, ItemCard } from "@/components/item-card"
+import { assertSlugsExist } from "@/lib/coverage"
 import { getAnnualCpiPoints } from "@/lib/cpi"
 import { getAnnual, getCpiTable, getItems } from "@/lib/data"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
@@ -51,9 +52,10 @@ export default async function Page() {
   // A sample, not the catalogue. There are 160 items; the full list belongs
   // on its own page, and a home page that lists everything is a directory.
   const FEATURED = [
-    "gas", "eggs", "bread", "milk", "ground-beef", "coffee",
-    "bacon", "bananas", "chicken-breast", "butter", "electricity", "sugar",
+    "gas", "eggs", "bread", "milk", "ground-beef", "ground-coffee",
+    "bacon", "bananas", "boneless-chicken-breast", "butter", "electricity", "sugar",
   ]
+  assertSlugsExist("home picker", FEATURED, new Set(items.map((i) => i.slug)))
   const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
     (i): i is NonNullable<typeof i> => Boolean(i),
   )

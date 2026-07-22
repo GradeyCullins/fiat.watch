@@ -25,6 +25,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { CALCULATORS } from "@/lib/calculators"
 import { getItems } from "@/lib/data"
 import { buildSearchIndex } from "@/lib/search"
+import { assertSlugsExist } from "@/lib/coverage"
 import { emojiFor } from "@/lib/emoji"
 
 function Wordmark() {
@@ -43,7 +44,8 @@ export async function SiteHeader() {
   const [items, index] = await Promise.all([getItems(), buildSearchIndex()])
 
   // The nav is a shortcut, not the catalogue. /costs is the catalogue.
-  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "coffee", "bacon", "electricity"]
+  const FEATURED = ["gas", "eggs", "bread", "milk", "ground-beef", "ground-coffee", "bacon", "electricity"]
+  assertSlugsExist("site nav", FEATURED, new Set(items.map((i) => i.slug)))
   const featured = FEATURED.map((slug) => items.find((i) => i.slug === slug)).filter(
     (i): i is NonNullable<typeof i> => Boolean(i),
   )
