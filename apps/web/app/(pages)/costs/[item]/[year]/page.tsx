@@ -1,15 +1,13 @@
-import { Suspense } from "react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 
 import { convert, formatUsd } from "@workspace/core"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { ItemArt } from "@/components/item-art"
-import { MonthDashboard, type MonthPoint } from "@/components/month-dashboard"
+import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
-import { getAnnual, getCpiTable, getItem, getItems, getMonthly } from "@/lib/data"
+import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries } from "@/lib/data"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -74,11 +72,13 @@ export default async function Page({
   if (!data) notFound()
 
   const { item, rows, index, year, row } = data
-  const [table, items, months] = await Promise.all([
+  const [table, items, months, allMonths] = await Promise.all([
     getCpiTable(),
     getItems(),
     getMonthly(slug, year),
+    getMonthlySeries(slug),
   ])
+  const allYears = rows
 
   const baseYear = table.latestYear
   const color = colorFor(slug)
@@ -99,17 +99,23 @@ export default async function Page({
       })),
   )
 
-  const points: MonthPoint[] = months.map((m) => ({
+  const deflate = (amount: number, y: number, m?: number) =>
+    table.has(y, m ?? null)
+      ? convert(table, { amount, from: { year: y, month: m }, to: { year: baseYear } }).converted
+      : null
+
+  // The full series, both resolutions. Same data the item page ships — this
+  // page is a zoom level on it, not a different chart.
+  const annual: ChartReading[] = allYears.map((row) => ({
+    year: row.year,
+    nominal: row.value,
+    real: deflate(row.value, row.year),
+  }))
+  const monthly: ChartReading[] = allMonths.map((m) => ({
+    year: m.year,
     month: m.month,
-    short: monthName(m.month).slice(0, 3),
-    name: monthName(m.month),
     nominal: m.value,
-    // Month pages on the old site deflated a March price with the *annual*
-    // index. With monthly CPI now stored, the right deflator is available.
-    real: table.has(year, m.month)
-      ? convert(table, { amount: m.value, from: { year, month: m.month }, to: { year: baseYear } })
-          .converted
-      : null,
+    real: deflate(m.value, m.year, m.month),
   }))
 
   return (
@@ -179,32 +185,33 @@ export default async function Page({
         )}
       </nav>
 
-      {points.length ? (
+      {months.length ? (
         <section className="mt-8">
           <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
             Month by month in {year}
           </h2>
-          <Suspense fallback={<Skeleton className="h-72 w-full" />}>
-            <MonthDashboard
-              slug={slug}
-              year={year}
-              unit={item.unit}
-              color={color}
-              baseYear={baseYear}
-              points={points}
-            />
-          </Suspense>
-
+      <div className="mt-3">
+        <ItemChart
+          slug={slug}
+          label={item.label}
+          unit={item.unit}
+          color={color}
+          baseYear={baseYear}
+          annual={annual}
+          monthly={monthly}
+          focus={{ year }}
+        />
+      </div>
           <ul className="ruled mt-3 grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
-            {points.map((point) => (
+            {months.map((point) => (
               <li key={point.month} className="bg-border">
                 <Link
                   href={`/costs/${slug}/${year}/${String(point.month).padStart(2, "0")}`}
                   className="bg-card hover:bg-accent flex h-full flex-col gap-1 px-2.5 py-2 transition-colors"
                 >
-                  <span className="text-muted-foreground text-xs">{point.short}</span>
+                  <span className="text-muted-foreground text-xs">{monthName(point.month).slice(0, 3)}</span>
                   <span className="tnum font-mono text-sm font-semibold">
-                    {formatUsd(point.nominal)}
+                    {formatUsd(point.value)}
                   </span>
                 </Link>
               </li>

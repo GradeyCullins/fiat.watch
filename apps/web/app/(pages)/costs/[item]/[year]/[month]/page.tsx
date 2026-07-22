@@ -5,8 +5,9 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 import { convert, formatUsd } from "@workspace/core"
 
 import { ItemArt } from "@/components/item-art"
+import { ItemChart, type ChartReading } from "@/components/item-chart"
 import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
-import { getCpiTable, getItem, getItems, getMonthly, getPriceKeys } from "@/lib/data"
+import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries, getPriceKeys } from "@/lib/data"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -70,7 +71,13 @@ export default async function Page({
   if (!data) notFound()
 
   const { item, year, month, value, inYear, previous, next } = data
-  const [table, items, keys] = await Promise.all([getCpiTable(), getItems(), getPriceKeys()])
+  const [table, items, keys, allYears, allMonths] = await Promise.all([
+    getCpiTable(),
+    getItems(),
+    getPriceKeys(),
+    getAnnual(slug),
+    getMonthlySeries(slug),
+  ])
 
   const baseYear = table.latestYear
   const color = colorFor(slug)
@@ -101,6 +108,25 @@ export default async function Page({
       other.slug !== slug &&
       keys.some((k) => k.slug === other.slug && k.year === year && k.month === month),
   )
+
+  const deflate = (amount: number, y: number, m?: number) =>
+    table.has(y, m ?? null)
+      ? convert(table, { amount, from: { year: y, month: m }, to: { year: baseYear } }).converted
+      : null
+
+  // The full series, both resolutions. Same data the item page ships — this
+  // page is a zoom level on it, not a different chart.
+  const annual: ChartReading[] = allYears.map((row) => ({
+    year: row.year,
+    nominal: row.value,
+    real: deflate(row.value, row.year),
+  }))
+  const monthly: ChartReading[] = allMonths.map((m) => ({
+    year: m.year,
+    month: m.month,
+    nominal: m.value,
+    real: deflate(m.value, m.year, m.month),
+  }))
 
   return (
     <Shell wide className="py-6 sm:py-8">
@@ -149,6 +175,19 @@ export default async function Page({
           note={`${year} averaged ${formatUsd(yearMean)} over ${inYear.length} months`}
         />
       </StatRail>
+
+      <div className="mt-3">
+        <ItemChart
+          slug={slug}
+          label={item.label}
+          unit={item.unit}
+          color={color}
+          baseYear={baseYear}
+          annual={annual}
+          monthly={monthly}
+          focus={{ year, month }}
+        />
+      </div>
 
       <nav className="mt-3 flex items-center justify-between gap-3">
         {previous ? (

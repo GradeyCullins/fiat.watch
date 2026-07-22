@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, ReferenceLine, XAxis, YAxis } from "recharts"
 
 import { formatUsd } from "@workspace/core"
 import { Card, CardAction, CardContent, CardHeader } from "@workspace/ui/components/card"
@@ -33,11 +33,17 @@ type Interval = "annual" | "monthly"
 type Basis = "real" | "nominal"
 
 const RANGES = [
+  { label: "1Y", years: 1 },
   { label: "5Y", years: 5 },
   { label: "10Y", years: 10 },
   { label: "25Y", years: 25 },
   { label: "All", years: Number.POSITIVE_INFINITY },
 ] as const
+
+export interface ChartFocus {
+  year?: number
+  month?: number
+}
 
 const MONTHS_SHORT = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -63,6 +69,7 @@ export function ItemChart({
   baseYear,
   annual,
   monthly,
+  focus,
 }: {
   slug: string
   label: string
@@ -71,27 +78,39 @@ export function ItemChart({
   baseYear: number
   annual: ChartReading[]
   monthly: ChartReading[]
+  /** Where the route says to start. Undefined on the item page. */
+  focus?: ChartFocus
 }) {
-  const [interval, setInterval] = React.useState<Interval>("annual")
+  // The route sets the *initial* view; the controls own it from then on.
+  // Changing a control deliberately does not rewrite the URL — the path is
+  // the page you asked for, not a running log of what you have looked at.
+  const [interval, setInterval] = React.useState<Interval>(
+    focus?.year == null ? "annual" : "monthly",
+  )
   const [basis, setBasis] = React.useState<Basis>("real")
-  const [range, setRange] = React.useState<string>("All")
+  const [range, setRange] = React.useState<string>(focus?.year == null ? "All" : "1Y")
 
   const key = basis === "real" ? "real" : "nominal"
   const source = interval === "annual" ? annual : monthly
 
   const data = React.useMemo(() => {
     const span = RANGES.find((r) => r.label === range)?.years ?? Number.POSITIVE_INFINITY
+
+    // Ranges are measured back from the focused period rather than from today,
+    // so `/costs/gas/1980` opens on 1980 instead of on the most recent year.
+    const anchor = focus?.year ?? source.at(-1)?.year ?? 0
     const rows = !Number.isFinite(span)
       ? source
-      : source.filter((r) => r.year > (source.at(-1)?.year ?? 0) - span)
+      : source.filter((r) => r.year > anchor - span && r.year <= anchor)
 
     return rows.map((r) => ({
       ...r,
       // One label field for the axis and the tooltip, so the same chart works
       // at both resolutions without branching on every formatter.
       x: r.month == null ? String(r.year) : `${MONTHS_SHORT[r.month - 1]} ${r.year}`,
+      focused: r.year === focus?.year && r.month === focus?.month,
     }))
-  }, [source, range])
+  }, [source, range, focus])
 
   const config = React.useMemo<ChartConfig>(
     () => ({ [key]: { label: basis === "real" ? `${baseYear} dollars` : "Price at the time", color } }),
@@ -163,6 +182,12 @@ export function ItemChart({
               tickLine={false}
               axisLine={false}
               tickMargin={6}
+              // Fit the visible data rather than pinning the baseline to zero.
+              // An area chart defaults to [0, auto], which is honest across a
+              // 50-year range and useless at one-year zoom, where a $4.85–$5.22
+              // spread renders as a flat line. Function form, not the
+              // `"dataMin - x"` string form — that only accepts a literal.
+              domain={[(min: number) => min * 0.96, (max: number) => max * 1.04]}
               tickFormatter={(v: number) => (v >= 10 ? `$${Math.round(v)}` : `$${v.toFixed(2)}`)}
             />
             <ChartTooltip
@@ -178,6 +203,17 @@ export function ItemChart({
                 />
               }
             />
+            {focus?.year != null ? (
+              <ReferenceLine
+                x={
+                  focus.month == null
+                    ? String(focus.year)
+                    : `${MONTHS_SHORT[focus.month - 1]} ${focus.year}`
+                }
+                stroke={color}
+                strokeDasharray="4 3"
+              />
+            ) : null}
             <Area
               dataKey={key}
               type="natural"
