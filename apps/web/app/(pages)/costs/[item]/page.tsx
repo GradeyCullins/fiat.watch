@@ -3,12 +3,12 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { convert, formatUsd } from "@workspace/core"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import { ItemArt } from "@/components/item-art"
 import { ItemDashboard, type DashboardPoint } from "@/components/item-dashboard"
-import { Crumbs, Shell } from "@/components/page-shell"
+import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
 import { getAnnual, getCpiTable, getItem, getItems } from "@/lib/data"
+import { itemStats } from "@/lib/item-stats"
 import { colorFor } from "@/lib/series"
 import { jsonLd, pageMetadata, SITE } from "@/lib/site"
 
@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ item: str
 
   return pageMetadata({
     title: `Historical ${item.labelAttributive} prices by year`,
-    description: `BLS average ${item.label} prices from ${item.firstYear} to ${item.lastYear}, ${item.unit}, with every year restated in ${table.latestYear} dollars.`,
+    description: `Every year of BLS average ${item.label} prices from ${item.firstYear} to ${item.lastYear}, ${item.unit}, each one restated in ${table.latestYear} dollars, on one chart.`,
     path: `/costs/${item.slug}`,
   })
 }
@@ -84,7 +84,25 @@ export default async function Page({ params }: { params: Promise<{ item: string 
         </p>
       </div>
 
-      <Suspense fallback={<Skeleton className="h-[36rem] w-full" />}>
+      {/*
+        The fallback is the point, not a placeholder.
+
+        `ItemDashboard` reads the pinned year from the URL through nuqs, which
+        calls `useSearchParams` — and everything inside that Suspense boundary
+        is excluded from the prerendered HTML. A skeleton here meant the four
+        headline prices were absent from the static page entirely: `Latest
+        price` returned zero hits in the built HTML. Rendering the real figures
+        on the server puts them back, and paints them instantly for people too.
+      */}
+      <Suspense
+        fallback={
+          <StatRail>
+            {itemStats({ points, unit: item.unit, baseYear }).map((stat) => (
+              <Stat key={stat.label} {...stat} />
+            ))}
+          </StatRail>
+        }
+      >
         <ItemDashboard
           slug={slug}
           label={item.label}

@@ -52,7 +52,14 @@ export async function generateMetadata({
 
   return pageMetadata({
     title: `How much did ${data.item.label} cost in ${data.year}?`,
-    description: `${data.item.label} cost ${formatUsd(data.row.value)} ${data.item.unit} in ${data.year}, based on BLS average price data. See the value in ${table.latestYear} dollars.`,
+    // Deliberately does not state the price.
+    //
+    // The old descriptions opened with the answer, which lets the search result
+    // satisfy the query outright. This is not a complete fix on its own —
+    // Google rewrites most descriptions and can lift the figure off the page
+    // anyway — but it changes what the snippet promises, from a number the
+    // result page can show to a set of things it cannot.
+    description: `Every monthly BLS average price for ${data.item.label} in ${data.year}, ${data.item.unit}, restated in ${table.latestYear} dollars and set against the years either side.`,
     path: `/costs/${data.item.slug}/${data.year}`,
   })
 }

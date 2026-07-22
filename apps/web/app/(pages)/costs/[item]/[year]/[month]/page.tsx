@@ -54,7 +54,8 @@ export async function generateMetadata({
   const period = `${monthName(data.month)} ${data.year}`
   return pageMetadata({
     title: `How much did ${data.item.label} cost in ${period}?`,
-    description: `${data.item.label} cost ${formatUsd(data.value)} ${data.item.unit} in ${period}, based on BLS average price data. See the value in ${table.latestYear} dollars.`,
+    // See the year page — the figure is deliberately withheld from the snippet.
+    description: `The BLS average price for ${data.item.label} in ${period}, ${data.item.unit}, converted to ${table.latestYear} dollars with that month's own CPI reading and set against the rest of ${data.year}.`,
     path: `/costs/${data.item.slug}/${data.year}/${pad(data.month)}`,
   })
 }

@@ -23,6 +23,8 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 
 import { ActiveLabelProbe } from "@/components/chart-active-label"
+import { Stat, StatRail } from "@/components/page-shell"
+import { itemStats } from "@/lib/item-stats"
 
 export interface DashboardPoint {
   year: number
@@ -85,14 +87,10 @@ export function ItemDashboard({
     [points, y],
   )
 
-  const latest = points.at(-1)
-  const shown = selected ?? latest ?? null
-  const prior = shown ? points[points.findIndex((p) => p.year === shown.year) - 1] : undefined
-  const yoy = shown && prior ? (shown.nominal / prior.nominal - 1) * 100 : null
-
-  const first = points[0]
-  const realChange =
-    first?.real && latest ? (latest.nominal / first.real - 1) * 100 : null
+  const stats = React.useMemo(
+    () => itemStats({ points, unit, baseYear, selectedYear: y }),
+    [points, unit, baseYear, y],
+  )
 
   const config = React.useMemo<ChartConfig>(() => ({ [key]: { label, color } }), [key, label, color])
 
@@ -112,37 +110,12 @@ export function ItemDashboard({
 
   return (
     <div className="flex flex-col">
-      {/* Stat rail */}
-      <div className="ruled bg-card grid border sm:grid-cols-2 lg:grid-cols-4">
-        <Stat
-          label={selected ? `${selected.year} price` : "Latest price"}
-          value={shown ? formatUsd(shown.nominal) : "—"}
-          note={unit}
-        />
-        <Stat
-          label={`In ${baseYear} dollars`}
-          value={shown?.real == null ? "—" : formatUsd(shown.real)}
-          note={
-            shown?.real == null
-              ? "No CPI for this year"
-              : shown.year === baseYear
-                ? "Already today's money"
-                : `${(((shown.real ?? 0) / shown.nominal - 1) * 100).toFixed(0)}% above the price of the day`
-          }
-        />
-        <Stat
-          label="Year on year"
-          value={yoy == null ? "—" : `${yoy >= 0 ? "+" : ""}${yoy.toFixed(1)}%`}
-          tone={yoy == null ? undefined : yoy >= 0 ? "up" : "down"}
-          note={prior ? `vs ${formatUsd(prior.nominal)} in ${prior.year}` : "No prior year"}
-        />
-        <Stat
-          label="Real, whole series"
-          value={realChange == null ? "—" : `${realChange >= 0 ? "+" : ""}${realChange.toFixed(0)}%`}
-          tone={realChange == null ? undefined : realChange >= 0 ? "up" : "down"}
-          note={first && latest ? `${first.year} → ${latest.year}, inflation removed` : undefined}
-        />
-      </div>
+      {/* Stat rail — identical markup to the server-rendered fallback. */}
+      <StatRail>
+        {stats.map((stat) => (
+          <Stat key={stat.label} {...stat} />
+        ))}
+      </StatRail>
 
       {/* Controls */}
       <div className="ruled bg-card/50 flex flex-wrap items-center gap-x-1 gap-y-2 border-x border-b px-2 py-2">
@@ -261,33 +234,6 @@ export function ItemDashboard({
   )
 }
 
-function Stat({
-  label,
-  value,
-  note,
-  tone,
-}: {
-  label: string
-  value: string
-  note?: string
-  tone?: "up" | "down"
-}) {
-  return (
-    <div className="ruled border-b px-4 py-3 last:border-b-0 sm:border-r sm:[&:nth-child(2n)]:border-r-0 lg:border-r lg:border-b-0 lg:[&:nth-child(2n)]:border-r">
-      <p className="text-eyebrow text-muted-foreground uppercase">{label}</p>
-      <p
-        className={cn(
-          "tnum mt-1.5 font-mono text-2xl leading-none font-bold",
-          tone === "up" && "text-up",
-          tone === "down" && "text-down",
-        )}
-      >
-        {value}
-      </p>
-      {note ? <p className="text-muted-foreground mt-1.5 text-xs">{note}</p> : null}
-    </div>
-  )
-}
 
 function Segmented({
   options,

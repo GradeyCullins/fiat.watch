@@ -2,8 +2,8 @@ import { Suspense } from "react"
 import Link from "next/link"
 
 import { convert, formatUsd } from "@workspace/core"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 
+import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
 import { ItemArt } from "@/components/item-art"
 import { getAnnualCpiPoints } from "@/lib/cpi"
@@ -87,7 +87,7 @@ export default async function Page() {
         </p>
       </div>
 
-      <Suspense fallback={<Skeleton className="h-[34rem] w-full" />}>
+      <Suspense fallback={<CalculatorStatic points={points} defaults={{ amount: 1, from: earliest, to: baseYear }} />}>
         <InflationCalculator
           animate
           points={points}

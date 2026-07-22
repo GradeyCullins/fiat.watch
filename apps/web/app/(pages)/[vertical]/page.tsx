@@ -3,8 +3,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { formatUsd } from "@workspace/core"
-import { Skeleton } from "@workspace/ui/components/skeleton"
 
+import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
 import { ItemArt } from "@/components/item-art"
 import { Crumbs, Shell } from "@/components/page-shell"
@@ -63,7 +63,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
         <p className="text-muted-foreground mt-2.5 max-w-2xl text-sm text-pretty">{page.intro}</p>
       </div>
 
-      <Suspense fallback={<Skeleton className="h-[32rem] w-full" />}>
+      <Suspense fallback={<CalculatorStatic points={points} defaults={{ amount: first.amount, from: first.year, to: latest }} />}>
         <InflationCalculator
           points={points}
           noun={page.noun}
