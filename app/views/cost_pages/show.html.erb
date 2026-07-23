@@ -1,31 +1,6 @@
 <% price = number_to_currency(@year_price) %>
 <% adjusted_price = @inflation_result.converted_formatted %>
 
-<script type="application/ld+json">
-  <%= raw({
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "How much did #{@item.question_name} cost in #{@year}?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "#{@item.question_name.capitalize} cost #{price} #{@item.unit} in #{@year}, based on #{@item.series_name} from #{AveragePriceCatalog.source_name}."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "What is #{price} in #{@year} worth in #{@latest_year}?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "#{price} in #{@year} has about the same purchasing power as #{adjusted_price} in #{@latest_year}, using CPI-U."
-        }
-      }
-    ]
-  }.to_json) %>
-</script>
-
 <section class="mx-auto grid min-h-[calc(100svh-11rem)] w-full max-w-7xl content-center gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[1fr_0.85fr] lg:items-center lg:py-8">
   <div>
     <p class="w-fit -rotate-1 bg-[#ffd400] px-3 py-2 font-display text-base font-black uppercase text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] sm:text-xl">BLS average price</p>
@@ -33,21 +8,23 @@
       How much did <%= @item.question_name %> cost in <%= @year %>?
     </h1>
     <p class="mt-5 max-w-3xl text-xl font-black leading-snug text-[#0a0a0a] sm:text-2xl">
-      <%= @item.question_name.capitalize %> averaged <span class="text-[#cc0000]"><%= price %></span> <%= @item.unit %> in <%= @year %>.
+      <%= @item.question_name.capitalize %> averaged <span class="text-[#cc0000]" data-nosnippet><%= price %></span> <%= @item.unit %> in <%= @year %>.
     </p>
   </div>
 
   <aside class="border-4 border-[#0a0a0a] bg-white p-5 shadow-[10px_10px_0_#1a56db] sm:p-6">
-    <p class="font-display text-6xl font-black leading-none text-[#cc0000] sm:text-7xl"><%= price %></p>
-    <p class="mt-2 text-lg font-black uppercase text-[#0a0a0a]"><%= @item.unit %> in <%= @year %></p>
-    <div class="my-5 h-1 bg-[#0a0a0a]"></div>
-    <p class="text-lg font-bold leading-snug text-[#444]">
-      Adjusted with CPI-U, that is about <span class="font-black text-[#0a0a0a]"><%= adjusted_price %></span> in <%= @latest_year %> dollars.
-    </p>
-    <a class="mt-5 inline-flex border-4 border-[#0a0a0a] bg-[#0a0a0a] px-5 py-3 font-display text-xl font-black uppercase text-[#ffd400] shadow-[6px_6px_0_#cc0000] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= calculation_path(amount: @year_price, from_year: @year, to_year: @latest_year) %>">See calculation</a>
-    <p class="mt-5 text-sm font-bold leading-snug text-[#555]">
-      Source: <a class="text-[#1a56db] underline decoration-2 underline-offset-4" href="<%= AveragePriceCatalog.source_url %>" rel="noopener noreferrer"><%= AveragePriceCatalog.source_name %></a>, <%= @item.series_id %>. Imported from <%= AveragePriceCatalog.mirror_name %>.
-    </p>
+    <div data-nosnippet>
+      <p class="font-display text-6xl font-black leading-none text-[#cc0000] sm:text-7xl"><%= price %></p>
+      <p class="mt-2 text-lg font-black uppercase text-[#0a0a0a]"><%= @item.unit %> in <%= @year %></p>
+      <div class="my-5 h-1 bg-[#0a0a0a]"></div>
+      <p class="text-lg font-bold leading-snug text-[#444]">
+        Adjusted with CPI-U, that is about <span class="font-black text-[#0a0a0a]"><%= adjusted_price %></span> in <%= @latest_year %> dollars.
+      </p>
+      <a class="mt-5 inline-flex border-4 border-[#0a0a0a] bg-[#0a0a0a] px-5 py-3 font-display text-xl font-black uppercase text-[#ffd400] shadow-[6px_6px_0_#cc0000] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= calculation_path(amount: @year_price, from_year: @year, to_year: @latest_year) %>">See calculation</a>
+      <p class="mt-5 text-sm font-bold leading-snug text-[#555]">
+        Source: <a class="text-[#1a56db] underline decoration-2 underline-offset-4" href="<%= AveragePriceCatalog.source_url %>" rel="noopener noreferrer"><%= AveragePriceCatalog.source_name %></a>, <%= @item.series_id %>. Imported from <%= AveragePriceCatalog.mirror_name %>.
+      </p>
+    </div>
   </aside>
 </section>
 
@@ -84,7 +61,7 @@
             <li>
               <a class="block border-4 border-[#0a0a0a] bg-[#ffd400] px-4 py-3 text-[#0a0a0a] shadow-[5px_5px_0_#0a0a0a] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_page_path(related_item.slug, @year) %>">
                 <%= related_item.question_name.capitalize %> in <%= @year %>
-                <span class="block text-sm text-[#444]"><%= number_to_currency(row.fetch(:price)) %> <%= related_item.unit %></span>
+                <span class="block text-sm text-[#444]" data-nosnippet><%= number_to_currency(row.fetch(:price)) %> <%= related_item.unit %></span>
               </a>
             </li>
           <% end %>
@@ -100,7 +77,7 @@
         <% @month_rows.each do |row| %>
           <a class="block border-4 border-[#0a0a0a] bg-white p-4 text-[#0a0a0a] shadow-[6px_6px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 hover:text-[#cc0000] focus:-translate-x-1 focus:-translate-y-1 focus:outline-none" href="<%= cost_month_page_path(@item.slug, @year, format("%02d", row.fetch(:month))) %>">
             <span class="block font-display text-2xl font-black"><%= row.fetch(:month_name) %> <%= @year %></span>
-            <span class="mt-2 block text-lg font-bold"><%= number_to_currency(row.fetch(:price)) %> <%= @item.unit %></span>
+            <span class="mt-2 block text-lg font-bold" data-nosnippet><%= number_to_currency(row.fetch(:price)) %> <%= @item.unit %></span>
           </a>
         <% end %>
       </div>

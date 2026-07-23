@@ -1,5 +1,3 @@
-require "bigdecimal"
-
 class CostPagesController < ApplicationController
   PRICE_SUBJECTS = {
     "gas" => "gas",
@@ -40,7 +38,7 @@ class CostPagesController < ApplicationController
     @month_rows = month_rows_for_year(@item, @year)
     @calculator_link = calculator_link_for(@item)
     @page_title = "How Much Did #{@item.question_name.titleize} Cost in #{@year}? | Fiat Watch"
-    @meta_description = "#{@item.question_name.capitalize} cost #{format_usd(@year_price)} #{@item.unit} in #{@year}, based on BLS average price data. See the inflation-adjusted value in #{@latest_year} dollars."
+    @meta_description = "See the BLS average price of #{@item.question_name} in #{@year}, the original source data, and its inflation-adjusted value in #{@latest_year} dollars."
     @canonical_path = cost_page_path(@item.slug, @year)
   end
 
@@ -58,7 +56,7 @@ class CostPagesController < ApplicationController
     @related_month_price_rows = related_month_price_rows(@item, @year, @month)
     @calculator_link = calculator_link_for(@item)
     @page_title = "How Much Did #{@item.question_name.titleize} Cost in #{@month_name} #{@year}? | Fiat Watch"
-    @meta_description = "#{@item.question_name.capitalize} cost #{format_usd(@month_price)} #{@item.unit} in #{@month_name} #{@year}, based on BLS average price data. See the inflation-adjusted value in #{@latest_year} dollars."
+    @meta_description = "See the BLS average price of #{@item.question_name} in #{@month_name} #{@year}, the original source data, and its inflation-adjusted value in #{@latest_year} dollars."
     @canonical_path = cost_month_page_path(@item.slug, @year, params[:month])
   end
 
@@ -68,11 +66,6 @@ class CostPagesController < ApplicationController
     AveragePriceCatalog.find(slug)
   rescue KeyError
     raise ActionController::RoutingError, "Not Found"
-  end
-
-  def format_usd(value)
-    whole, frac = format("%.2f", BigDecimal(value.to_s).round(2)).split(".")
-    "$#{whole.reverse.scan(/\d{1,3}/).join(",").reverse}.#{frac}"
   end
 
   def price_subject(item)

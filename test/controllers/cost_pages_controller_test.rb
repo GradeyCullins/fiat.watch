@@ -6,10 +6,16 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "title", "How Much Did Gas Cost in 1980? | Fiat Watch"
-    assert_select "meta[name=?][content*=?]", "description", "Gas cost $1.25 per gallon in 1980"
+    description = "See the BLS average price of gas in 1980, the original source data, and its inflation-adjusted value in #{CpiCalculator.latest_year} dollars."
+    assert_select "meta[name=?][content=?]", "description", description
+    assert_select "meta[property=?][content=?]", "og:description", description
+    assert_select "meta[name=?][content=?]", "twitter:description", description
+    assert_select "script[type=?]", "application/ld+json", count: 0
     assert_select "link[rel=?][href$=?]", "canonical", cost_page_path("gas", 1980)
     assert_select "h1", "How much did gas cost in 1980?"
     assert_select "p", /Gas averaged \$1\.25 per gallon in 1980/
+    assert_select "span[data-nosnippet]", "$1.25"
+    assert_select "aside div[data-nosnippet]", 1
     assert_select "a[href*=?]", calculation_path
     assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
     assert_select "a[href=?]", cost_page_path("gas", 1981), text: "Gas prices in 1981"
@@ -40,6 +46,7 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
     assert_select "a[href=?]", cost_page_path("gas", 2025), text: /Gas in 2025/
     assert_select "a[href=?]", cost_item_path("eggs"), text: "Historical egg prices"
     assert_select "a[href=?]", gas_inflation_calculator_path, text: "Gas inflation calculator"
+    assert_select "span[data-nosnippet]", text: "$1.25 per gallon"
   end
 
   test "unknown cost item hub returns not found" do
@@ -59,9 +66,16 @@ class CostPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "title", "How Much Did Gas Cost in March 2015? | Fiat Watch"
+    description = "See the BLS average price of gas in March 2015, the original source data, and its inflation-adjusted value in #{CpiCalculator.latest_year} dollars."
+    assert_select "meta[name=?][content=?]", "description", description
+    assert_select "meta[property=?][content=?]", "og:description", description
+    assert_select "meta[name=?][content=?]", "twitter:description", description
+    assert_select "script[type=?]", "application/ld+json", count: 0
     assert_select "link[rel=?][href$=?]", "canonical", cost_month_page_path("gas", 2015, "03")
     assert_select "h1", "How much did gas cost in March 2015?"
     assert_select "p", /Gas averaged \$2\.48 per gallon in March 2015/
+    assert_select "span[data-nosnippet]", "$2.48"
+    assert_select "aside div[data-nosnippet]", 1
     assert_select "a[href=?]", cost_page_path("gas", 2015), text: "Gas prices in 2015"
     assert_select "a[href=?]", cost_item_path("gas"), text: "Historical gas prices"
     assert_select "a[href=?]", cost_month_page_path("gas", 2015, "02"), text: "Gas prices in February 2015"
