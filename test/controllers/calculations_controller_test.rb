@@ -10,7 +10,16 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "meta[property=?][content$=?]", "og:url", "/"
     assert_select "meta[property=?][content$=?]", "og:image", "/opengraph-card.png"
     assert_select "meta[name=?][content$=?]", "twitter:image", "/opengraph-card.png"
-    assert_select "h1", /US inflation\s+calculator/
+    assert_select "h1", /What was your money\s+really worth\?/
+    assert_select "#calculator-panel" do
+      assert_select "turbo-frame#result"
+      assert_select "turbo-frame#result[autoscroll]", count: 0
+      assert_select "form[data-turbo-frame=?]", "result"
+      assert_select "label[for=?]", "amount", text: "Amount"
+      assert_select "label[for=?]", "from_year", text: "From year"
+      assert_select "label[for=?]", "to_year", text: "To year"
+    end
+    assert_select "[aria-label=?]", "Calculator features", count: 0
     [
       salary_inflation_calculator_path,
       rent_inflation_calculator_path,
@@ -43,6 +52,10 @@ class CalculationsControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-analytics-params-value*=?]", '"amount":100.0'
     assert_select "[data-analytics-params-value*=?]", '"from_year":2000'
     assert_select "[data-analytics-params-value*=?]", '"to_year":' + CpiCalculator.latest_year.to_s
+    assert_select "#calculator-panel > turbo-frame#result" do
+      assert_select "[role=?]", "status"
+    end
+    assert_select "turbo-frame#result[autoscroll]", count: 0
     assert_select "aside[aria-label=?]", "Advertising" do
       assert_select "p", text: "Your ad here"
       assert_select "a[href^=?]", "mailto:ads@fiat.watch"

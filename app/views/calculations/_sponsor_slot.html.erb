@@ -1,18 +1,18 @@
 <aside
-  class="mt-8 border-4 border-[#0a0a0a] bg-white p-5 shadow-[10px_10px_0_#cc0000] sm:p-6"
+  class="border-b-4 border-[#0a0a0a] bg-[#faf7f2] p-4 sm:p-5"
   aria-label="Advertising"
   data-controller="analytics"
   data-analytics-event-name-value="sponsor_slot_view"
   data-analytics-params-value="<%= { placement: "calculation_result" }.to_json %>"
 >
-  <p class="text-xs font-black uppercase tracking-wide text-[#444]">Sponsor</p>
-  <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <p class="text-[0.625rem] font-black uppercase tracking-wide text-[#444]">Sponsor</p>
+  <div class="mt-2 flex items-center justify-between gap-4">
     <div>
-      <p class="font-display text-3xl font-black leading-none text-[#0a0a0a]">Your ad here</p>
-      <p class="mt-2 max-w-2xl font-semibold text-[#444]">Reach people comparing salaries, rent, groceries, and purchasing power.</p>
+      <p class="font-display text-xl font-black leading-none text-[#0a0a0a] sm:text-2xl">Your ad here</p>
+      <p class="mt-1 hidden max-w-2xl text-sm font-semibold text-[#444] sm:block">Reach people comparing salaries, rent, groceries, and purchasing power.</p>
     </div>
     <a
-      class="inline-flex w-fit border-4 border-[#0a0a0a] bg-[#1a56db] px-5 py-3 font-display text-xl font-black uppercase text-white shadow-[7px_7px_0_#ffd400] hover:-translate-x-1 hover:-translate-y-1 focus:-translate-x-1 focus:-translate-y-1 focus:outline-none"
+      class="inline-flex w-fit shrink-0 border-2 border-[#0a0a0a] bg-[#1a56db] px-3 py-2 font-display text-sm font-black uppercase text-white shadow-[4px_4px_0_#ffd400] hover:-translate-x-0.5 hover:-translate-y-0.5 focus:-translate-x-0.5 focus:-translate-y-0.5 focus:outline-none sm:text-base"
       href="mailto:ads@fiat.watch?subject=Fiat%20Watch%20advertising"
       data-controller="analytics"
       data-analytics-track-on-connect-value="false"

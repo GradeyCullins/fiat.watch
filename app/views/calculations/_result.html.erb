@@ -1,5 +1,5 @@
 <% if @error %>
-  <div class="border-4 border-[#0a0a0a] bg-[#cc0000] p-5 font-bold text-white shadow-[8px_8px_0_#0a0a0a]" role="alert">
+  <div class="border-b-4 border-[#0a0a0a] bg-[#cc0000] p-4 font-bold text-white sm:p-5" role="alert">
     <p><strong>That didn't work:</strong> <%= @error %></p>
   </div>
 <% elsif @result %>
@@ -18,28 +18,28 @@
   } %>
 
   <div
-    class="-rotate-1 border-4 border-[#0a0a0a] bg-[#ffd400] p-6 text-center shadow-[12px_12px_0_#1a56db] sm:p-10"
+    class="border-b-4 border-[#0a0a0a] bg-[#ffd400] p-4 text-center sm:p-5"
     role="status"
     aria-live="polite"
     data-controller="analytics"
     data-analytics-event-name-value="calculation_completed"
     data-analytics-params-value="<%= analytics_params.to_json %>"
   >
-    <p class="font-display text-2xl font-black text-[#0a0a0a]">
+    <p class="font-display text-lg font-black leading-tight text-[#0a0a0a] sm:text-xl">
       <span class="text-[#cc0000]"><%= @result.amount_formatted %></span>
       <span class="italic">in <strong><%= @result.from_year %></strong> is like spending</span>
     </p>
     <p class="leading-none">
-      <span class="my-4 inline-block break-words font-display text-6xl font-black leading-none text-[#1a56db] sm:text-8xl"><%= @result.converted_formatted %></span>
+      <span class="my-2 inline-block break-words font-display text-6xl font-black leading-none tracking-tight text-[#1a56db] sm:text-7xl"><%= @result.converted_formatted %></span>
     </p>
-    <p class="font-display text-xl font-black italic">in <strong><%= @result.to_year %></strong>.</p>
-    <p class="mt-5 text-lg font-black"><%= @result.cumulative_inflation_text %></p>
+    <p class="font-display text-lg font-black italic">in <strong><%= @result.to_year %></strong>.</p>
+    <p class="mt-2 text-sm font-black sm:text-base"><%= @result.cumulative_inflation_text %></p>
     <% [@result.from_year, @result.to_year].uniq.each do |year| %>
       <% if CpiCalculator.provisional_year?(year) %>
-        <p class="mt-2 text-sm font-bold text-[#444]"><%= CpiCalculator.provisional_year_note(year) %></p>
+        <p class="mt-1 text-xs font-bold text-[#444]"><%= CpiCalculator.provisional_year_note(year) %></p>
       <% end %>
     <% end %>
-    <p class="mt-4 text-sm font-bold">
+    <p class="mt-2 text-xs font-bold">
       <a class="text-[#1a56db] underline decoration-2 underline-offset-4 hover:text-[#cc0000]" href="<%= calculation_path(amount: @result.amount, from_year: @result.from_year, to_year: @result.to_year) %>" data-turbo-frame="_top">Permalink to this calculation</a>
     </p>
   </div>
