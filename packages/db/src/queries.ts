@@ -7,7 +7,7 @@
  * publishes the same item for many places (gasoline has 47 live series), so
  * "the price of gas" is only a question once you say where.
  */
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 
 import { getDb } from "./client";
 import { areas, cpi, items, prices, series } from "./schema";
@@ -17,6 +17,10 @@ export const NATIONAL = "us";
 
 export interface ItemSummary {
   slug: string;
+  /** The BLS series this item's prices come from, e.g. APU0000708111. */
+  seriesId: string;
+  /** BLS's own name, e.g. "Eggs, grade A, large, per doz." — the exact spec. */
+  blsName: string;
   label: string;
   labelAttributive: string;
   unit: string;
@@ -40,6 +44,8 @@ export async function listItems(areaSlug: string = NATIONAL): Promise<ItemSummar
   const rows = await db
     .select({
       slug: items.slug,
+      seriesId: series.seriesId,
+      blsName: items.blsName,
       label: items.label,
       labelAttributive: items.labelAttributive,
       unit: items.unit,
@@ -60,6 +66,8 @@ export async function listItems(areaSlug: string = NATIONAL): Promise<ItemSummar
     .where(eq(areas.slug, areaSlug))
     .groupBy(
       items.slug,
+      series.seriesId,
+      items.blsName,
       items.label,
       items.labelAttributive,
       items.unit,
@@ -227,4 +235,47 @@ export async function latestCpiYear() {
     .from(cpi)
     .where(sql`${cpi.month} is null`);
   return row?.year ?? null;
+}
+
+export interface AreaReading {
+  itemSlug: string;
+  areaSlug: string;
+  areaName: string;
+  /** national | region | division | metro | sizeclass */
+  kind: string;
+  year: number;
+  month: number;
+  value: number;
+}
+
+/**
+ * The most recent reading for every (item, area) pair — the whole map, in one
+ * query.
+ *
+ * The alternative was a query per item, and the map lets you switch between
+ * 160 of them with no server to ask, so it would have meant either 160 build
+ * queries feeding 160 payloads or a round trip the static site cannot make.
+ * There are 1,483 series and therefore at most 1,483 rows here; the entire
+ * result is smaller than one item's monthly history.
+ *
+ * `distinct on` is Postgres-specific and PGlite is Postgres, so the "latest
+ * row per group" is one index-ordered pass rather than a self-join.
+ */
+export async function latestReadingByArea(): Promise<AreaReading[]> {
+  const db = await getDb();
+  return db
+    .selectDistinctOn([items.slug, areas.slug], {
+      itemSlug: items.slug,
+      areaSlug: areas.slug,
+      areaName: areas.name,
+      kind: areas.kind,
+      year: prices.year,
+      month: prices.month,
+      value: prices.value,
+    })
+    .from(prices)
+    .innerJoin(series, eq(series.seriesId, prices.seriesId))
+    .innerJoin(items, eq(items.itemCode, series.itemCode))
+    .innerJoin(areas, eq(areas.areaCode, series.areaCode))
+    .orderBy(asc(items.slug), asc(areas.slug), desc(prices.year), desc(prices.month));
 }

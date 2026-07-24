@@ -17,8 +17,20 @@ export interface CalculatorExample {
 
 export interface CalculatorPage {
   slug: string
-  /** The URL path, unchanged from Rails — these rank and must not move. */
-  path: string
+  /**
+   * The glyph for this calculator, on the definition rather than derived.
+   *
+   * `emojiFor()` keys off item slugs, so asking it for "salary" or "rent"
+   * returned the fallback receipt — five of the seven calculators were a 🧾.
+   * These are about a *kind of spending*, not a BLS item, so they carry their
+   * own.
+   */
+  emoji: string
+  /**
+   * Where this page lived on Rails. Kept only so `next.config.ts` can 301 it —
+   * nothing links here. See `path` for the live URL.
+   */
+  legacyPath: string
   title: string
   heading: string
   description: string
@@ -30,10 +42,35 @@ export interface CalculatorPage {
   costItems: string[]
 }
 
+/**
+ * The live URL for a calculator.
+ *
+ * These moved from `/gas-inflation-calculator` to `/calculators/gas` — a
+ * deliberate trade. The old paths rank and every one of them is now a 301,
+ * which resets them; what it buys is a real section with one shape, instead of
+ * seven pages loose at the root pretending not to be a group.
+ */
+export const calculatorPath = (slug: string) => `/calculators/${slug}`
+
+/**
+ * The general dollar converter. Not one of the seven verticals, but a
+ * calculator, so it lives in the same section rather than on the home page.
+ */
+export const GENERAL_CALCULATOR = {
+  emoji: "💵",
+  label: "Inflation calculator",
+  path: "/calculators/inflation",
+  blurb: "Any amount, any two years — the general dollar converter.",
+} as const
+
+/** The one CPI series every calculator currently runs on. */
+export const CPI_SERIES = "CUUR0000SA0"
+
 export const CALCULATORS: CalculatorPage[] = [
   {
     slug: "salary",
-    path: "/salary-inflation-calculator",
+    emoji: "💼",
+    legacyPath: "/salary-inflation-calculator",
     title: "Salary Inflation Calculator With CPI Data",
     heading: "Salary inflation calculator",
     description:
@@ -50,7 +87,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "rent",
-    path: "/rent-inflation-calculator",
+    emoji: "🏠",
+    legacyPath: "/rent-inflation-calculator",
     title: "Rent Inflation Calculator With CPI Data",
     heading: "Rent inflation calculator",
     description:
@@ -67,7 +105,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "groceries",
-    path: "/grocery-inflation-calculator",
+    emoji: "🛒",
+    legacyPath: "/grocery-inflation-calculator",
     title: "Grocery Inflation Calculator With CPI Data",
     heading: "Grocery inflation calculator",
     description:
@@ -84,7 +123,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "gas",
-    path: "/gas-inflation-calculator",
+    emoji: "⛽",
+    legacyPath: "/gas-inflation-calculator",
     title: "Gas Inflation Calculator With CPI Data",
     heading: "Gas inflation calculator",
     description:
@@ -101,7 +141,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "car-prices",
-    path: "/car-price-inflation-calculator",
+    emoji: "🚗",
+    legacyPath: "/car-price-inflation-calculator",
     title: "Car Price Inflation Calculator With CPI Data",
     heading: "Car price inflation calculator",
     description:
@@ -118,7 +159,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "college-tuition",
-    path: "/college-tuition-inflation-calculator",
+    emoji: "🎓",
+    legacyPath: "/college-tuition-inflation-calculator",
     title: "College Tuition Inflation Calculator With CPI Data",
     heading: "College tuition inflation calculator",
     description:
@@ -135,7 +177,8 @@ export const CALCULATORS: CalculatorPage[] = [
   },
   {
     slug: "minimum-wage",
-    path: "/minimum-wage-inflation-calculator",
+    emoji: "🪙",
+    legacyPath: "/minimum-wage-inflation-calculator",
     title: "Minimum Wage Inflation Calculator With CPI Data",
     heading: "Minimum wage inflation calculator",
     description: "See what an old hourly wage is worth today using official BLS CPI data.",

@@ -17,6 +17,7 @@
     "@workspace/ui": "workspace:*",
     "cmdk": "catalog:",
     "lucide-react": "catalog:",
+    "mapbox-gl": "catalog:",
     "next": "catalog:",
     "next-themes": "catalog:",
     "nuqs": "catalog:",

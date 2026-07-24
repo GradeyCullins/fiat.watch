@@ -33,15 +33,15 @@ export function ItemCard({
     <Link
       href={href}
       className={cn(
-        "group bg-card hover:border-primary/40 hover:bg-accent/40 flex flex-col items-center rounded-2xl border text-center transition-all hover:-translate-y-0.5",
+        "group bg-card float-1 hover:float-2 hover:border-primary/40 flex flex-col items-center rounded-2xl border text-center transition-all hover:-translate-y-1",
         compact ? "gap-1.5 px-3 py-3.5" : "gap-2 px-4 py-5",
       )}
     >
       <span
         aria-hidden
         className={cn(
-          "bg-muted/60 grid place-items-center rounded-full transition-transform group-hover:scale-105",
-          compact ? "size-10 text-xl" : "size-14 text-3xl",
+          "grid place-items-center leading-none transition-transform group-hover:scale-105",
+          compact ? "size-12 text-[2rem]" : "size-16 text-[3rem]",
         )}
       >
         {emojiFor(slug)}

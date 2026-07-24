@@ -146,7 +146,7 @@ export function InflationCalculator({
 
   return (
     <div className={cn("flex flex-col", className)}>
-      <div className="ruled bg-card flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border p-4 sm:p-6">
+      <div className="ruled bg-card flex flex-wrap items-end justify-between gap-x-6 gap-y-4 rounded-t-2xl border p-4 sm:p-6">
         <div>
           <label
             htmlFor="amount"
@@ -166,7 +166,7 @@ export function InflationCalculator({
                 if (next != null) setState({ amount: next })
               }}
               aria-invalid={typed == null}
-              className="ruled tnum focus-visible:border-ring h-11 w-40 border bg-transparent px-3 font-mono text-lg font-bold outline-hidden sm:text-xl"
+              className="ruled tnum focus-visible:border-ring h-11 w-40 rounded-lg border bg-transparent px-3 font-mono text-lg font-bold outline-hidden sm:text-xl"
             />
           </div>
         </div>
@@ -216,7 +216,7 @@ export function InflationCalculator({
       {data.length ? (
         <ChartContainer
           config={CHART_CONFIG}
-          className="ruled bg-card aspect-auto h-64 w-full border-x border-b p-2 sm:h-72 sm:p-4"
+          className="ruled bg-card aspect-auto h-64 w-full rounded-b-2xl border-x border-b p-2 sm:h-72 sm:p-4"
         >
           <AreaChart data={data} margin={{ left: 4, right: 12, top: 8, bottom: 0 }}>
             <defs>
@@ -240,7 +240,7 @@ export function InflationCalculator({
               cursor={{ stroke: "var(--rule)", strokeWidth: 1, strokeDasharray: "3 3" }}
               content={({ active, payload, label }) =>
                 active && payload?.length ? (
-                  <div className="bg-popover text-popover-foreground ruled border p-2.5 shadow-lg">
+                  <div className="bg-popover text-popover-foreground ruled rounded-lg border p-2.5 shadow-lg">
                     <p className="tnum font-mono text-base leading-none font-bold">
                       {formatUsd(Number(payload[0]!.value))}
                     </p>

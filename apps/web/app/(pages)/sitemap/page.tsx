@@ -1,7 +1,7 @@
 import Link from "next/link"
 
 import { Crumbs, Shell } from "@/components/page-shell"
-import { CALCULATORS } from "@/lib/calculators"
+import { CALCULATORS, calculatorPath } from "@/lib/calculators"
 import { getAnnual, getItems, getPriceKeys } from "@/lib/data"
 import { emojiFor } from "@/lib/emoji"
 import { pageMetadata } from "@/lib/site"
@@ -38,7 +38,7 @@ export default async function Page() {
         <ul className="flex flex-wrap gap-2">
           <SitemapLink href="/">Inflation calculator</SitemapLink>
           {CALCULATORS.map((c) => (
-            <SitemapLink key={c.slug} href={c.path}>
+            <SitemapLink key={c.slug} href={calculatorPath(c.slug)}>
               {c.heading}
             </SitemapLink>
           ))}
@@ -96,8 +96,8 @@ function SitemapLink({
         href={href}
         className={
           compact
-            ? "ruled hover:bg-primary hover:text-primary-foreground tnum block border-2 px-2 py-0.5 font-mono text-xs transition-colors"
-            : "ruled hover:bg-primary hover:text-primary-foreground block border-2 px-2.5 py-1 text-sm transition-colors"
+            ? "ruled hover:bg-primary hover:text-primary-foreground tnum block rounded-md border px-2 py-0.5 font-mono text-xs transition-colors"
+            : "ruled hover:bg-primary hover:text-primary-foreground block rounded-lg border px-2.5 py-1 text-sm transition-colors"
         }
       >
         {children}

@@ -5,10 +5,10 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 import { convert, formatUsd } from "@workspace/core"
 
 import { ItemChart, type ChartReading } from "@/components/item-chart"
-import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
-import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries, getPriceKeys } from "@/lib/data"
-import { hasMonthTier } from "@/lib/coverage"
+import { Crumbs, priceTone, Shell, Stat, StatRail } from "@/components/page-shell"
+import { getAnnual, getCpiTable, getItem, getMonthly, getMonthlySeries, getPriceKeys } from "@/lib/data"
 import { emojiFor } from "@/lib/emoji"
+import { monthParams } from "@/lib/routes"
 import { colorFor } from "@/lib/series"
 import { monthName, pageMetadata } from "@/lib/site"
 
@@ -17,12 +17,7 @@ export const dynamicParams = false
 const pad = (month: number) => String(month).padStart(2, "0")
 
 export async function generateStaticParams() {
-  // Exactly the readings that exist. October 2025 was never collected, so it
-  // never becomes a URL rather than becoming one that renders an empty page.
-  const keys = await getPriceKeys()
-  return keys
-    .filter((key) => hasMonthTier(key.slug))
-    .map((key) => ({ item: key.slug, year: String(key.year), month: pad(key.month) }))
+  return monthParams()
 }
 
 async function load(slug: string, yearParam: string, monthParam: string) {
@@ -71,10 +66,8 @@ export default async function Page({
   if (!data) notFound()
 
   const { item, year, month, value, inYear, previous, next } = data
-  const [table, items, keys, allYears, allMonths] = await Promise.all([
+  const [table, allYears, allMonths] = await Promise.all([
     getCpiTable(),
-    getItems(),
-    getPriceKeys(),
     getAnnual(slug),
     getMonthlySeries(slug),
   ])
@@ -100,14 +93,6 @@ export default async function Page({
       ? inYear.find((m) => m.month === priorMonth.month)?.value
       : undefined
   const mom = priorValue ? (value / priorValue - 1) * 100 : null
-
-  // Only link to sibling months that actually exist — with `dynamicParams`
-  // off, a link to a missing reading is a link to a 404.
-  const siblings = items.filter(
-    (other) =>
-      other.slug !== slug &&
-      keys.some((k) => k.slug === other.slug && k.year === year && k.month === month),
-  )
 
   const deflate = (amount: number, y: number, m?: number) =>
     table.has(y, m ?? null)
@@ -141,7 +126,7 @@ export default async function Page({
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span aria-hidden className="bg-muted/70 grid size-11 shrink-0 place-items-center rounded-full text-2xl">
+        <span aria-hidden className="shrink-0 text-5xl leading-none sm:text-6xl">
           {emojiFor(slug)}
         </span>
         <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
@@ -168,13 +153,13 @@ export default async function Page({
         <Stat
           label="Month on month"
           value={mom == null ? "—" : `${mom >= 0 ? "+" : ""}${mom.toFixed(1)}%`}
-          tone={mom == null ? undefined : mom >= 0 ? "up" : "down"}
+          tone={priceTone(mom)}
           note={priorValue ? `vs ${formatUsd(priorValue)} the month before` : "No prior month"}
         />
         <Stat
           label={`Against the ${year} average`}
           value={`${vsYear >= 0 ? "+" : ""}${vsYear.toFixed(1)}%`}
-          tone={vsYear >= 0 ? "up" : "down"}
+          tone={priceTone(vsYear)}
           note={`${year} averaged ${formatUsd(yearMean)} over ${inYear.length} months`}
         />
       </StatRail>
@@ -215,50 +200,6 @@ export default async function Page({
         )}
       </nav>
 
-      <section className="mt-8">
-        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
-          The rest of {year}
-        </h2>
-        <ul className="ruled grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
-          {inYear.map((m) => (
-            <li key={m.month} className="bg-border">
-              <Link
-                href={`/costs/${slug}/${year}/${pad(m.month)}`}
-                aria-current={m.month === month ? "page" : undefined}
-                className={`flex h-full flex-col gap-1 px-2.5 py-2 transition-colors ${
-                  m.month === month
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card hover:bg-accent"
-                }`}
-              >
-                <span className="text-xs opacity-70">{monthName(m.month).slice(0, 3)}</span>
-                <span className="tnum font-mono text-sm font-semibold">{formatUsd(m.value)}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {siblings.length ? (
-        <section className="mt-8">
-          <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
-            Other prices that month
-          </h2>
-          <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
-            {siblings.map((other) => (
-              <li key={other.slug} className="bg-border">
-                <Link
-                  href={`/costs/${other.slug}/${year}/${pad(month)}`}
-                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
-                >
-                  <span aria-hidden className="size-5 grid place-items-center">{emojiFor(other.slug)}</span>
-                  <span className="text-sm font-medium">{other.label}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
     </Shell>
   )
 }
@@ -275,7 +216,7 @@ function Neighbour({
   return (
     <Link
       href={href}
-      className="ruled hover:bg-accent tnum flex items-center gap-1.5 border px-2.5 py-1 font-mono text-xs transition-colors"
+      className="ruled hover:bg-accent tnum flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs transition-colors"
     >
       {back ? <ArrowLeftIcon className="size-3" /> : null}
       {children}

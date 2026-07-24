@@ -30,13 +30,12 @@ export function ErrorState({
 
       <div className="mt-8 flex flex-wrap gap-3">
         {onRetry ? (
-          <Button className="ruled border-2" onClick={onRetry}>
+          <Button onClick={onRetry}>
             Try again
           </Button>
         ) : null}
         <Button
           variant="outline"
-          className="ruled border-2"
           nativeButton={false}
           render={<Link href="/" />}
         >

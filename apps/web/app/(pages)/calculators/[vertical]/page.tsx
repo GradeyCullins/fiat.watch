@@ -7,7 +7,7 @@ import { formatUsd } from "@workspace/core"
 import { CalculatorStatic } from "@/components/calculator-static"
 import { InflationCalculator } from "@/components/inflation-calculator"
 import { Crumbs, Shell } from "@/components/page-shell"
-import { CALCULATORS, type CalculatorPage } from "@/lib/calculators"
+import { CALCULATORS, calculatorPath, type CalculatorPage } from "@/lib/calculators"
 import { getAnnualCpiPoints } from "@/lib/cpi"
 import { getAnnual, getItems } from "@/lib/data"
 import { emojiFor } from "@/lib/emoji"
@@ -17,16 +17,20 @@ import { pageMetadata } from "@/lib/site"
 export const dynamicParams = false
 
 export function generateStaticParams() {
-  return CALCULATORS.map((c) => ({ vertical: c.path.slice(1) }))
+  return CALCULATORS.map((c) => ({ vertical: c.slug }))
 }
 
 const find = (vertical: string): CalculatorPage | null =>
-  CALCULATORS.find((c) => c.path === `/${vertical}`) ?? null
+  CALCULATORS.find((c) => c.slug === vertical) ?? null
 
 export async function generateMetadata({ params }: { params: Promise<{ vertical: string }> }) {
   const page = find((await params).vertical)
   if (!page) return {}
-  return pageMetadata({ title: page.title, description: page.description, path: page.path })
+  return pageMetadata({
+    title: page.title,
+    description: page.description,
+    path: calculatorPath(page.slug),
+  })
 }
 
 export default async function Page({ params }: { params: Promise<{ vertical: string }> }) {
@@ -77,8 +81,8 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
         {page.examples.map((example) => (
           <Link
             key={`${example.amount}-${example.year}`}
-            href={`${page.path}?amount=${example.amount}&from=${example.year}&to=${latest}`}
-            className="ruled hover:bg-primary hover:text-primary-foreground tnum border px-2 py-1 font-mono text-xs transition-colors"
+            href={`${calculatorPath(page.slug)}?amount=${example.amount}&from=${example.year}&to=${latest}`}
+            className="ruled hover:bg-primary hover:text-primary-foreground tnum rounded-md border px-2 py-1 font-mono text-xs transition-colors"
           >
             {formatUsd(example.amount)} in {example.year}
           </Link>
@@ -90,7 +94,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
           <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
             Actual prices, not just the index
           </h2>
-          <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="ruled grid gap-px overflow-hidden rounded-xl border sm:grid-cols-2 lg:grid-cols-4">
             {related.map(({ item, price }) => (
               <li key={item.slug} className="bg-border">
                 <Link
@@ -111,7 +115,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
 
       <section className="mt-8">
         <h2 className="font-display mb-3 text-lg font-bold tracking-tight">Other calculators</h2>
-        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="ruled grid gap-px overflow-hidden rounded-xl border sm:grid-cols-2 lg:grid-cols-4">
           <li className="bg-border">
             <Link
               href="/"
@@ -123,7 +127,7 @@ export default async function Page({ params }: { params: Promise<{ vertical: str
           {others.map((other) => (
             <li key={other.slug} className="bg-border">
               <Link
-                href={other.path}
+                href={calculatorPath(other.slug)}
                 className="bg-card hover:bg-accent block h-full px-3 py-2.5 text-sm font-medium transition-colors"
               >
                 {other.heading.replace(" inflation calculator", "")}

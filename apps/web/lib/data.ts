@@ -12,13 +12,33 @@ import {
   type ItemSummary,
 } from "@workspace/db"
 
+import emojiMap from "./item-emoji.json"
+import { assertSlugsExist } from "./coverage"
+
 /**
  * Everything here runs at build time only — `next build` prerenders every
  * route, so the deployed artifact never opens a database. React's `cache`
  * keeps one read per render pass rather than one per page component.
  */
 
-export const getItems = cache(listItems)
+/*
+ * Every item must have a glyph, asserted here rather than discovered later.
+ *
+ * Two potato slugs had drifted out of the map during the catalogue naming
+ * pass — `white-potatoes-per-lb` was renamed to `potatoes` — and nothing
+ * noticed, because `emojiFor` falls back to a receipt. The marquee shipped
+ * "White potato 🧾" for weeks. This is the same class of silent rename that
+ * has already changed slugs and labels twice, so it fails the build now.
+ */
+export const getItems = cache(async (areaSlug?: string) => {
+  const items = await listItems(areaSlug)
+  assertSlugsExist("emoji map", Object.keys(emojiMap), new Set(items.map((i) => i.slug)))
+  const missing = items.filter((i) => !(i.slug in emojiMap)).map((i) => i.slug)
+  if (missing.length) {
+    throw new Error(`No emoji for ${missing.length} item(s): ${missing.join(", ")}`)
+  }
+  return items
+})
 
 export const getCpiTable = cache(async () => new CpiTable(await allCpi()))
 

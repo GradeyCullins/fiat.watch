@@ -25,13 +25,13 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="icon" className="ruled border-2" aria-label="Theme" />
+          <Button variant="ghost" size="icon" className="rounded-full" aria-label="Theme" />
         }
       >
         <SunIcon className="size-4 dark:hidden" />
         <MoonIcon className="hidden size-4 dark:block" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="ruled w-auto min-w-36 rounded-none border-2">
+      <DropdownMenuContent align="end" className="w-auto min-w-36">
         {OPTIONS.map(({ value, label, Icon }) => (
           <DropdownMenuItem
             key={value}

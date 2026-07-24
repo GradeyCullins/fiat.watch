@@ -85,15 +85,18 @@
     --color-foreground: var(--foreground);
     --color-background: var(--background);
 
-    /* Radius is 0 everywhere. Kept as the same six tokens shadcn generates so
-       components that ask for `rounded-lg` still resolve — they just get 0. */
-    --radius-sm: var(--radius);
-    --radius-md: var(--radius);
+    /* One knob. `--radius` is the base and the scale derives from it, so the
+       whole site's corner language moves by editing a single value — which is
+       what happened: it was 0 everywhere, every token flattened to the same 0,
+       and the result read as a printed form rather than something you browse.
+       Small controls stay tighter than panels; that ratio is the scale's job. */
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
-    --radius-xl: var(--radius);
-    --radius-2xl: var(--radius);
-    --radius-3xl: var(--radius);
-    --radius-4xl: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-3xl: calc(var(--radius) + 16px);
+    --radius-4xl: calc(var(--radius) + 24px);
 }
 
 /* ---------------------------------------------------------------------------
@@ -124,12 +127,14 @@
     --destructive: oklch(0.575 0.212 25);
 
     /* `border` is what CartesianGrid and every component hairline uses, so it
-       stays quiet. `rule` is the structural edge we draw ourselves. */
+       stays quiet. `rule` is the structural edge we draw ourselves — one step
+       stronger than `border`, not the near-black it used to be. Thirty-six
+       elements carry `ruled`; at near-black they read as a ledger. */
     --border: oklch(0.882 0.012 158);
-    --rule: oklch(0.205 0.022 168);
+    --rule: oklch(0.852 0.014 158);
     --input: oklch(0.815 0.014 158);
     --ring: oklch(0.545 0.132 158);
-    --brutal: oklch(0.205 0.022 168);
+    --elevation: oklch(0.205 0.022 168 / 0.09);
 
     /* Direction. Never swapped, never themed away. */
     --up: oklch(0.545 0.135 160);
@@ -141,7 +146,7 @@
     --chart-4: oklch(0.505 0.158 292);
     --chart-5: oklch(0.575 0.192 22);
 
-    --radius: 0rem;
+    --radius: 0.75rem;
 
     --sidebar: oklch(0.958 0.01 155);
     --sidebar-foreground: oklch(0.205 0.022 168);
@@ -172,10 +177,10 @@
     --destructive: oklch(0.672 0.198 24);
 
     --border: oklch(0.328 0.014 258);
-    --rule: oklch(0.492 0.018 258);
+    --rule: oklch(0.378 0.015 258);
     --input: oklch(0.408 0.016 258);
     --ring: oklch(0.735 0.148 160);
-    --brutal: oklch(0.128 0.014 258);
+    --elevation: oklch(0.08 0.01 258 / 0.45);
 
     --up: oklch(0.735 0.148 160);
     --down: oklch(0.672 0.198 24);
@@ -200,42 +205,35 @@
    Utilities
    --------------------------------------------------------------------------- */
 
-/* One hard offset shadow rule at three sizes, not twelve ad-hoc offsets. The
-   colour is a token so it inverts with the theme instead of being a literal
-   black that disappears on a dark background. */
-@utility brutal-2 {
-    box-shadow: 2px 2px 0 0 var(--brutal);
+/* Elevation, at three steps. These replaced `brutal-2/4/6`, which were hard
+   offset shadows in a near-black token — the printed-dollar-bill look. Soft
+   and tinted with the theme's own hue so a card lifts off the page instead of
+   being stamped onto it. */
+@utility float-1 {
+    box-shadow: 0 1px 2px -1px var(--elevation), 0 2px 6px -2px var(--elevation);
 }
-@utility brutal-4 {
-    box-shadow: 4px 4px 0 0 var(--brutal);
+@utility float-2 {
+    box-shadow: 0 2px 4px -2px var(--elevation), 0 8px 20px -6px var(--elevation);
 }
-@utility brutal-6 {
-    box-shadow: 6px 6px 0 0 var(--brutal);
+@utility float-3 {
+    box-shadow: 0 4px 8px -4px var(--elevation), 0 18px 40px -12px var(--elevation);
 }
 
-/* The structural edge: near-black in light, near-white in dark. Used on the
-   panels that carry the layout, never on incidental hairlines. */
+/* The structural edge. Used on the panels that carry the layout, never on
+   incidental hairlines. */
 @utility ruled {
     border-color: var(--rule);
 }
 
-/* The nav ticker. One keyframe over a track that is duplicated in the markup,
-   so -50% lands exactly on the seam and the loop is invisible. */
-@keyframes marquee {
-    from { transform: translate3d(0, 0, 0); }
-    to   { transform: translate3d(-50%, 0, 0); }
-}
+/* Horizontal rails scroll; the scrollbar is noise on a strip of chips.
+   Replaces the marquee keyframe that used to live here — motion implied live
+   data on a dataset that updates monthly, and you cannot mark the current item
+   on something that is moving. */
+@utility no-scrollbar {
+    scrollbar-width: none;
 
-@utility marquee {
-    animation: marquee 90s linear infinite;
-
-    &:hover {
-        animation-play-state: paused;
-    }
-
-    /* Motion for its own sake is the first thing to go. */
-    @media (prefers-reduced-motion: reduce) {
-        animation: none;
+    &::-webkit-scrollbar {
+        display: none;
     }
 }
 
@@ -262,9 +260,39 @@
             );
     }
 
+    /* Anything that responds to a click gets the hand, declared once by role
+       rather than by remembering `cursor-pointer` on each new component.
+       Tailwind v4's preflight sets `button { cursor: default }`, so without
+       this every button in the app is a text cursor.
+
+       The list is roles, not class names, because that is what the primitives
+       already emit: cmdk rows and Base UI select options are `option`, menu
+       items are `menuitem`, tabs are `tab`. A component added tomorrow that
+       announces itself correctly to a screen reader is covered for free —
+       which is the point. If something here still shows an arrow, the bug is
+       that it has no role, and that is worth knowing. */
+    a[href],
+    label[for],
+    summary,
+    select,
     button:not(:disabled),
-    [role="button"]:not(:disabled) {
+    [role="button"],
+    [role="link"],
+    [role="option"],
+    [role="menuitem"],
+    [role="menuitemcheckbox"],
+    [role="menuitemradio"],
+    [role="tab"],
+    [role="checkbox"],
+    [role="radio"],
+    [role="switch"] {
         cursor: pointer;
+    }
+
+    [aria-disabled="true"],
+    [data-disabled],
+    :disabled {
+        cursor: default;
     }
 
     /* The Rails app used `focus:outline-none` sitewide with a translate-only
@@ -286,4 +314,62 @@
         background: var(--primary);
         color: var(--primary-foreground);
     }
+}
+
+/* ---------------------------------------------------------------------------
+   Map pins.
+
+   Mapbox DOM markers, so these are real elements and inherit the theme's own
+   tokens — a `symbol` layer would render its text through Mapbox's SDF glyph
+   atlas, which is not a route colour emoji survive.
+   --------------------------------------------------------------------------- */
+.metro-pin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    cursor: pointer;
+    line-height: 1;
+    transition: transform 120ms ease;
+}
+
+.metro-pin:hover {
+    transform: scale(1.15);
+    z-index: 1;
+}
+
+.metro-pin-emoji {
+    font-size: 1.15rem;
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.55));
+}
+
+.metro-pin-price {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: var(--popover-foreground);
+    background: var(--popover);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 5px;
+    white-space: nowrap;
+}
+
+/* Mapbox ships its own control chrome; align it with ours rather than leaving
+   two visual languages on one surface. */
+.mapboxgl-ctrl-group {
+    border-radius: var(--radius-md) !important;
+    overflow: hidden;
+}
+
+/* A region or division label. Bigger than a city pin so the two layers read as
+   two layers — a census region is not another town. */
+.metro-pin-area .metro-pin-emoji {
+    font-size: 1.6rem;
+}
+
+.metro-pin-area .metro-pin-price {
+    font-size: 0.8125rem;
+    padding: 2px 8px;
+    border-color: var(--rule);
 }

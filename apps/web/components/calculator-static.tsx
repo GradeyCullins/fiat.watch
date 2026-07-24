@@ -34,13 +34,13 @@ export function CalculatorStatic({
 
   return (
     <div className="flex flex-col">
-      <div className="ruled bg-card border p-4 sm:p-6">
+      <div className="ruled bg-card rounded-t-2xl border p-4 sm:p-6">
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
           <div>
             <p className="text-eyebrow text-muted-foreground mb-2 uppercase">Amount</p>
             <p className="flex items-center gap-2">
               <span className="text-muted-foreground font-mono text-lg">$</span>
-              <span className="ruled tnum flex h-11 w-40 items-center border px-3 font-mono text-lg font-bold sm:text-xl">
+              <span className="ruled tnum flex h-11 w-40 items-center rounded-lg border px-3 font-mono text-lg font-bold sm:text-xl">
                 {defaults.amount}
               </span>
             </p>

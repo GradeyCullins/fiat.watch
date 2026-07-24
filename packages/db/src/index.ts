@@ -18,6 +18,8 @@ export {
   allItemKeys,
   annualPrices,
   monthlyPrices,
+  latestReadingByArea,
+  type AreaReading,
   monthlySeries,
   allPriceKeys,
   allCpi,

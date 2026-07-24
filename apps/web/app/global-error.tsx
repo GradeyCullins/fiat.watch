@@ -29,7 +29,7 @@ export default function GlobalError({
           <div className="mt-8 flex gap-3">
             <button
               onClick={unstable_retry}
-              className="bg-primary text-primary-foreground border-foreground border-2 px-4 py-2 font-medium"
+              className="bg-primary text-primary-foreground rounded-lg px-4 py-2 font-medium"
             >
               Try again
             </button>
@@ -37,7 +37,7 @@ export default function GlobalError({
                 layout, so client-side routing is exactly what failed. A full
                 document load is the recovery. */}
             {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-            <a href="/" className="border-foreground border-2 px-4 py-2 font-medium">
+            <a href="/" className="rounded-lg border px-4 py-2 font-medium">
               Back to the chart
             </a>
           </div>

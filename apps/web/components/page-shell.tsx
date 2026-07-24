@@ -106,9 +106,25 @@ export function Shell({
 /** The row of figures that opens every data page. Four across on desktop. */
 export function StatRail({ children }: { children: React.ReactNode }) {
   return (
-    <div className="ruled bg-card grid border sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+    <div className="ruled bg-card float-1 grid overflow-hidden rounded-xl border sm:grid-cols-2 lg:grid-cols-4">
+      {children}
+    </div>
   )
 }
+
+/**
+ * Which way is "good" on a page about the cost of living.
+ *
+ * Every figure here was coloured with stock-market logic — up green, down red —
+ * which is right when you hold the asset and exactly backwards when you buy it.
+ * Gas rising 17.6% was printed in the same green as a portfolio gain, on a site
+ * whose argument is that rising prices are your money being debased.
+ *
+ * `up`/`down` stay as the *direction* tokens. This maps a price movement onto
+ * how it lands for the reader: dearer is bad, cheaper is good.
+ */
+export const priceTone = (change: number | null | undefined): "up" | "down" | undefined =>
+  change == null ? undefined : change > 0 ? "down" : "up"
 
 export function Stat({
   label,

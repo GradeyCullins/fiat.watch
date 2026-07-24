@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next"
 
-import { CALCULATORS } from "@/lib/calculators"
-import { getAnnual, getItems, getPriceKeys } from "@/lib/data"
+import { CALCULATORS, calculatorPath } from "@/lib/calculators"
+import { getItems } from "@/lib/data"
+import { monthParams, yearParams } from "@/lib/routes"
 import { SITE } from "@/lib/site"
 
 /**
@@ -18,9 +19,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = [
     { url: abs("/"), priority: 1, changeFrequency: "monthly" },
+    { url: abs("/map"), priority: 0.6, changeFrequency: "monthly" },
+    { url: abs("/calculators"), priority: 0.7, changeFrequency: "monthly" },
+    { url: abs("/calculators/inflation"), priority: 0.9, changeFrequency: "monthly" },
     { url: abs("/sitemap"), priority: 0.2, changeFrequency: "monthly" },
     ...CALCULATORS.map((c) => ({
-      url: abs(c.path),
+      url: abs(calculatorPath(c.slug)),
       priority: 0.8,
       changeFrequency: "monthly" as const,
     })),
@@ -31,17 +35,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  for (const item of items) {
-    for (const row of await getAnnual(item.slug)) {
-      entries.push({ url: abs(`/costs/${item.slug}/${row.year}`), priority: 0.5 })
-    }
+  /*
+   * Year and month URLs come from the same functions `generateStaticParams`
+   * uses, so this file cannot advertise a page the build does not produce.
+   *
+   * It used to walk `getPriceKeys()` directly and so ignored `hasMonthTier` —
+   * it listed 44,015 month URLs against 2,599 built pages, pointing Googlebot
+   * at 41,416 that would 404.
+   */
+  for (const { item, year } of await yearParams()) {
+    entries.push({ url: abs(`/costs/${item}/${year}`), priority: 0.5 })
   }
 
-  for (const key of await getPriceKeys()) {
-    entries.push({
-      url: abs(`/costs/${key.slug}/${key.year}/${String(key.month).padStart(2, "0")}`),
-      priority: 0.3,
-    })
+  for (const { item, year, month } of await monthParams()) {
+    entries.push({ url: abs(`/costs/${item}/${year}/${month}`), priority: 0.3 })
   }
 
   return entries

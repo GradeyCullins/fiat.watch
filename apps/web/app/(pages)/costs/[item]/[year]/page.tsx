@@ -5,24 +5,17 @@ import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react"
 import { convert, formatUsd } from "@workspace/core"
 
 import { ItemChart, type ChartReading } from "@/components/item-chart"
-import { Crumbs, Shell, Stat, StatRail } from "@/components/page-shell"
-import { getAnnual, getCpiTable, getItem, getItems, getMonthly, getMonthlySeries } from "@/lib/data"
-import { hasMonthTier } from "@/lib/coverage"
+import { Crumbs, priceTone, Shell, Stat, StatRail } from "@/components/page-shell"
+import { getAnnual, getCpiTable, getItem, getItems, getMonthlySeries } from "@/lib/data"
 import { emojiFor } from "@/lib/emoji"
+import { yearParams } from "@/lib/routes"
 import { colorFor } from "@/lib/series"
-import { monthName, pageMetadata } from "@/lib/site"
+import { pageMetadata } from "@/lib/site"
 
 export const dynamicParams = false
 
 export async function generateStaticParams() {
-  const items = await getItems()
-  const out: { item: string; year: string }[] = []
-  for (const item of items) {
-    for (const row of await getAnnual(item.slug)) {
-      out.push({ item: item.slug, year: String(row.year) })
-    }
-  }
-  return out
+  return yearParams()
 }
 
 /**
@@ -73,12 +66,7 @@ export default async function Page({
   if (!data) notFound()
 
   const { item, rows, index, year, row } = data
-  const [table, items, months, allMonths] = await Promise.all([
-    getCpiTable(),
-    getItems(),
-    getMonthly(slug, year),
-    getMonthlySeries(slug),
-  ])
+  const [table, allMonths] = await Promise.all([getCpiTable(), getMonthlySeries(slug)])
   const allYears = rows
 
   const baseYear = table.latestYear
@@ -90,15 +78,6 @@ export default async function Page({
   const previous = rows[index - 1]
   const next = rows[index + 1]
   const yoy = previous ? (row.value / previous.value - 1) * 100 : null
-
-  const related = await Promise.all(
-    items
-      .filter((other) => other.slug !== slug)
-      .map(async (other) => ({
-        other,
-        value: (await getAnnual(other.slug)).find((r) => r.year === year)?.value ?? null,
-      })),
-  )
 
   const deflate = (amount: number, y: number, m?: number) =>
     table.has(y, m ?? null)
@@ -131,7 +110,7 @@ export default async function Page({
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span aria-hidden className="bg-muted/70 grid size-11 shrink-0 place-items-center rounded-full text-2xl">
+        <span aria-hidden className="shrink-0 text-5xl leading-none sm:text-6xl">
           {emojiFor(slug)}
         </span>
         <h1 className="font-display text-2xl leading-none font-extrabold tracking-tight sm:text-3xl">
@@ -156,7 +135,7 @@ export default async function Page({
         <Stat
           label="Year on year"
           value={yoy == null ? "—" : `${yoy >= 0 ? "+" : ""}${yoy.toFixed(1)}%`}
-          tone={yoy == null ? undefined : yoy >= 0 ? "up" : "down"}
+          tone={priceTone(yoy)}
           note={previous ? `vs ${formatUsd(previous.value)} in ${previous.year}` : "First year"}
         />
         <Stat
@@ -189,11 +168,6 @@ export default async function Page({
         )}
       </nav>
 
-      {months.length ? (
-        <section className="mt-8">
-          <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
-            Month by month in {year}
-          </h2>
       <div className="mt-3">
         <ItemChart
           slug={slug}
@@ -206,57 +180,7 @@ export default async function Page({
           focus={{ year }}
         />
       </div>
-          {/* Only the five legacy items have month pages — see lib/coverage.ts.
-              The monthly data is still on the chart above for every item; what
-              is gated here is linking to URLs that will not be built. */}
-          {hasMonthTier(slug) ? (
-          <ul className="ruled mt-3 grid grid-cols-3 gap-px border sm:grid-cols-6 lg:grid-cols-12">
-            {months.map((point) => (
-              <li key={point.month} className="bg-border">
-                <Link
-                  href={`/costs/${slug}/${year}/${String(point.month).padStart(2, "0")}`}
-                  className="bg-card hover:bg-accent flex h-full flex-col gap-1 px-2.5 py-2 transition-colors"
-                >
-                  <span className="text-muted-foreground text-xs">{monthName(point.month).slice(0, 3)}</span>
-                  <span className="tnum font-mono text-sm font-semibold">
-                    {formatUsd(point.value)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          ) : null}
-        </section>
-      ) : null}
 
-      <section className="mt-8">
-        <h2 className="font-display mb-3 text-lg font-bold tracking-tight">
-          Everything else in {year}
-        </h2>
-        <ul className="ruled grid gap-px border sm:grid-cols-2 lg:grid-cols-4">
-          {related.map(({ other, value }) => (
-            <li key={other.slug} className="bg-border">
-              {value == null ? (
-                <span className="bg-card text-muted-foreground flex h-full items-center gap-2.5 px-3 py-2.5 text-sm">
-                  <span aria-hidden className="size-5 opacity-40 grid place-items-center">{emojiFor(other.slug)}</span>
-                  {other.label} — no data
-                </span>
-              ) : (
-                <Link
-                  href={`/costs/${other.slug}/${year}`}
-                  className="bg-card hover:bg-accent flex h-full items-center gap-2.5 px-3 py-2.5 transition-colors"
-                >
-                  <span aria-hidden className="size-5 grid place-items-center">{emojiFor(other.slug)}</span>
-                  <span className="text-sm font-medium">{other.label}</span>
-                  <span className="tnum ml-auto font-mono text-sm font-semibold">
-                    {formatUsd(value)}
-                  </span>
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      </section>
     </Shell>
   )
 }
@@ -273,7 +197,7 @@ function Neighbour({
   return (
     <Link
       href={href}
-      className="ruled hover:bg-accent tnum flex items-center gap-1.5 border px-2.5 py-1 font-mono text-xs transition-colors"
+      className="ruled hover:bg-accent tnum flex items-center gap-1.5 rounded-lg border px-2.5 py-1 font-mono text-xs transition-colors"
     >
       {back ? <ArrowLeftIcon className="size-3" /> : null}
       {children}

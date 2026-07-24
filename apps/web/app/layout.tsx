@@ -37,6 +37,15 @@ export const metadata: Metadata = {
   authors: [{ name: SITE.name, url: SITE.url.toString() }],
   category: "finance",
   robots: { index: true, follow: true },
+  // The parts that never change per page. Pages deliberately do not set
+  // `openGraph` at all — see `pageMetadata` — so this block is inherited and
+  // Next fills in title, description and the nearest file-based image itself.
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image" },
 }
 
 export const viewport: Viewport = {
